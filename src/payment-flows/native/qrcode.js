@@ -142,6 +142,9 @@ export function initNativeQRCode({ props, serviceData, config, components, fundi
             getLogger().info(`VenmoDesktopPay_qrcode`).track({
                 [FPTI_KEY.TRANSITION]:      FPTI_TRANSITION.QR_SHOWN
             }).flush();
+            getLogger().info(`VenmoDesktopPay_qrcode_prepare_escape`).track({
+                [FPTI_KEY.TRANSITION]:      FPTI_TRANSITION.QR_PREPARE_PAY
+            }).flush();
 
             const onQRClose = (event? : string = 'closeQRCode') => {
                 return ZalgoPromise.try(() => {
@@ -155,8 +158,9 @@ export function initNativeQRCode({ props, serviceData, config, components, fundi
 
 
             const onEscapePath = (selectedFundingSource : $Values<typeof FUNDING>) => {
-                getLogger().info(`VenmoDesktopPay_escape_${ selectedFundingSource }`).track({
-                    [FPTI_KEY.TRANSITION]:      FPTI_TRANSITION.QR_SHOWN
+                getLogger().info(`VenmoDesktopPay_process_pay_with_${ selectedFundingSource }`).track({
+                    [FPTI_KEY.STATE]:       FPTI_STATE.BUTTON,
+                    [FPTI_KEY.TRANSITION]:  `${ FPTI_TRANSITION.QR_PROCESS_PAY_WITH }_${selectedFundingSource}`
                 }).flush();
                 onQrEscapePath(selectedFundingSource);
             };
