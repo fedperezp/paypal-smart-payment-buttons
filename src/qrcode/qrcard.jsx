@@ -7,7 +7,7 @@ import { useState, useEffect } from 'preact/hooks';
 import {
     getBody
 } from '../lib';
-import { QRCODE_STATE } from '../constants';
+import { QRCODE_STATE, QR_ESCAPE_PATH } from '../constants';
 
 import {
     ErrorMessage,
@@ -54,6 +54,11 @@ function QRCard({
         return state === QRCODE_STATE.ERROR;
     };
 
+    const handleClick = (event : string) => {
+        window.xprops.hide();
+        window.xprops.onEscapePath(event);
+    };
+
     return (
         <Fragment>
             <style nonce={ cspNonce }> { cardStyle } </style>
@@ -91,6 +96,7 @@ function QRCard({
                     onClick={ () => setState(debugging_nextStateMap.get(state)) }
                 >Next State</button>}
             </div>
+            <p className="escape-path">Don&apos;t have the app? Pay with <span className="escape-path__link" onClick={ () => handleClick(QR_ESCAPE_PATH.PAYPAL) }>PayPal</span> or <span className="escape-path__link" onClick={ () => handleClick(QR_ESCAPE_PATH.GUEST) }>Credit/Debit card</span></p>
         </Fragment>
     );
 }

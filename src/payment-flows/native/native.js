@@ -62,6 +62,13 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
         return instance.start();
     };
 
+    const qrEscapePath = (fundingSource) => {
+        const paymentInfo = { ...payment, fundingSource: fundingSource, };
+        const instance = checkout.init({ props, components, payment: paymentInfo, config, serviceData });
+        clean.register(() => instance.close());
+        return instance.start();
+    };
+
     const onInitCallback = () => {
         return ZalgoPromise.try(() => {
             onLsatUpgradeCalled();
@@ -181,6 +188,13 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
         });
     };
 
+    const onQrEscapePath = (fundingSource) => {
+        return ZalgoPromise.try(() => {
+            qrEscapePath(fundingSource);
+            return { buttonSessionID };
+        });
+    }
+
     const onCloseCallback = () => {
         return ZalgoPromise.delay(1000).then(() => {
             
@@ -213,6 +227,7 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
             onShippingChange:  onShippingChangeCallback,
             onFallback:        onFallbackCallback,
             onClose:           onCloseCallback,
+            onQrEscapePath: onQrEscapePath,
             onDestroy:         destroy
         }
     });
