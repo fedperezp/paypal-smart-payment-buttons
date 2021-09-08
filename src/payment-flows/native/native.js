@@ -30,12 +30,6 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
     const { fundingSource } = payment;
     const { firebase: firebaseConfig } = config;
 
-    getLogger().addTrackingBuilder(() => {
-        return {
-            [FPTI_KEY.CHOSEN_FUNDING]: fundingSource
-        };
-    });
-
     if (!firebaseConfig) {
         throw new Error(`Can not run native flow without firebase config`);
     }
@@ -173,15 +167,16 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
         const { win, optOut = getDefaultNativeOptOutOptions() } = opts || {};
         
         return ZalgoPromise.try(() => {
-            if (optOut) {
-                const result = setNativeOptOut(optOut);
 
-                getLogger().info(`native_message_onfallback`)
-                    .track({
-                        [FPTI_KEY.TRANSITION]:             FPTI_TRANSITION.NATIVE_ON_FALLBACK,
-                        [FPTI_CUSTOM_KEY.TRANSITION_TYPE]:  result ? FPTI_TRANSITION.NATIVE_OPT_OUT :  FPTI_TRANSITION.NATIVE_FALLBACK
-                    }).flush();
-            }
+            const result = setNativeOptOut(optOut);
+            const { fallback_reason } = optOut;
+
+            getLogger().info(`native_message_onfallback`)
+                .track({
+                    [FPTI_KEY.TRANSITION]:               FPTI_TRANSITION.NATIVE_ON_FALLBACK,
+                    [FPTI_CUSTOM_KEY.TRANSITION_TYPE]:   result ? FPTI_TRANSITION.NATIVE_OPT_OUT :  FPTI_TRANSITION.NATIVE_FALLBACK,
+                    [FPTI_CUSTOM_KEY.TRANSITION_REASON]: fallback_reason || ''
+                }).flush();
 
             fallbackToWebCheckout(win);
             return { buttonSessionID };
@@ -233,6 +228,12 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
     });
 
     const click = () => {
+        getLogger().addTrackingBuilder(() => {
+            return {
+                [FPTI_KEY.CHOSEN_FUNDING]: fundingSource
+            };
+        });
+        
         return flow.click();
     };
 

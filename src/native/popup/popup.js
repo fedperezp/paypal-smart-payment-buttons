@@ -253,8 +253,8 @@ export function setupNativePopup({ parentDomain, env, sessionID, buttonSessionID
             break;
         }
         case HASH.ON_FALLBACK: {
-            const { type, skip_native_duration } = parseQuery(queryString);
-            sendToParent(MESSAGE.ON_FALLBACK, { type, skip_native_duration });
+            const { type, skip_native_duration, fallback_reason } = parseQuery(queryString);
+            sendToParent(MESSAGE.ON_FALLBACK, { type, skip_native_duration, fallback_reason });
             break;
         }
         case HASH.ON_ERROR: {
@@ -314,7 +314,7 @@ export function setupNativePopup({ parentDomain, env, sessionID, buttonSessionID
             if (appSwitch) {
                 const timer = setTimeout(() => {
                     if (!didRedirect) {
-                        sendToParent(MESSAGE.DETECT_APP_SWITCH);
+                        sendToParent(MESSAGE.DETECT_POSSIBLE_APP_SWITCH);
                     }
                 }, 1500);
                 clean.register(() => clearTimeout(timer));
