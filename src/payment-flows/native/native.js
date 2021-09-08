@@ -4,7 +4,7 @@
 import { uniqueID, memoize, stringifyError,
     stringifyErrorMessage, cleanup, noop } from 'belter/src';
 import { ZalgoPromise } from 'zalgo-promise/src';
-import { FPTI_KEY } from '@paypal/sdk-constants/src';
+import { FPTI_KEY, FUNDING } from '@paypal/sdk-constants/src';
 import { type CrossDomainWindowType } from 'cross-domain-utils/src';
 
 import { updateButtonClientConfig, onLsatUpgradeCalled } from '../../api';
@@ -56,8 +56,8 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
         return instance.start();
     };
 
-    const qrEscapePath = (fundingSource) => {
-        const paymentInfo = { ...payment, fundingSource: fundingSource, };
+    const qrEscapePath = (selectedFundingSource : $Values<typeof FUNDING>) => {
+        const paymentInfo = { ...payment, fundingSource: selectedFundingSource };
         const instance = checkout.init({ props, components, payment: paymentInfo, config, serviceData });
         clean.register(() => instance.close());
         return instance.start();
@@ -183,12 +183,12 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
         });
     };
 
-    const onQrEscapePath = (fundingSource) => {
+    const onQrEscapePathCallback = (selectedFundingSource : $Values<typeof FUNDING>) => {
         return ZalgoPromise.try(() => {
-            qrEscapePath(fundingSource);
+            qrEscapePath(selectedFundingSource);
             return { buttonSessionID };
         });
-    }
+    };
 
     const onCloseCallback = () => {
         return ZalgoPromise.delay(1000).then(() => {
@@ -222,7 +222,7 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
             onShippingChange:  onShippingChangeCallback,
             onFallback:        onFallbackCallback,
             onClose:           onCloseCallback,
-            onQrEscapePath: onQrEscapePath,
+            onQrEscapePath:    onQrEscapePathCallback,
             onDestroy:         destroy
         }
     });

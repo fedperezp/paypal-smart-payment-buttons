@@ -7,7 +7,7 @@ import { type CrossDomainWindowType } from 'cross-domain-utils/src';
 
 import { getNativeEligibility } from '../../api';
 import { getLogger, getStorageID } from '../../lib';
-import { FPTI_STATE, FPTI_TRANSITION, TARGET_ELEMENT, QRCODE_STATE, FPTI_CUSTOM_KEY, QR_ESCAPE_PATH } from '../../constants';
+import { FPTI_STATE, FPTI_TRANSITION, TARGET_ELEMENT, QRCODE_STATE, FPTI_CUSTOM_KEY } from '../../constants';
 import type { ButtonProps, ServiceData, Config, Components } from '../../button/props';
 import { type OnShippingChangeData } from '../../props/onShippingChange';
 
@@ -115,7 +115,10 @@ type NativeQRCodeOptions = {|
             buttonSessionID : string
         |}>,
         onClose : () => ZalgoPromise<void>,
-        onDestroy : () => ZalgoPromise<void>
+        onDestroy : () => ZalgoPromise<void>,
+        onQrEscapePath : (selectedFundingSource : $Values<typeof FUNDING>) => ZalgoPromise<{|
+            buttonSessionID : string
+        |}>
     |}
 |};
 
@@ -151,12 +154,12 @@ export function initNativeQRCode({ props, serviceData, config, components, fundi
             };
 
 
-            const onEscapePath = (event: string) => {
-                getLogger().info(`VenmoDesktopPay_escape_${event}`).track({
+            const onEscapePath = (selectedFundingSource : $Values<typeof FUNDING>) => {
+                getLogger().info(`VenmoDesktopPay_escape_${ selectedFundingSource }`).track({
                     [FPTI_KEY.TRANSITION]:      FPTI_TRANSITION.QR_SHOWN
                 }).flush();
-                onQrEscapePath(event);
-            }
+                onQrEscapePath(selectedFundingSource);
+            };
 
             const validatePromise = ZalgoPromise.try(() => {
                 return onClick ? onClick({ fundingSource }) : true;
@@ -187,11 +190,11 @@ export function initNativeQRCode({ props, serviceData, config, components, fundi
                     const url = getNativeUrl({ props, serviceData, config, fundingSource, sessionUID, orderID, stickinessID, pageUrl });
 
                     const qrCodeComponentInstance = QRCode({
-                        cspNonce:  config.cspNonce,
-                        qrPath:    url,
-                        state:     QRCODE_STATE.DEFAULT,
-                        onClose:   onQRClose,
-                        onEscapePath: onEscapePath
+                        cspNonce:     config.cspNonce,
+                        qrPath:       url,
+                        state:        QRCODE_STATE.DEFAULT,
+                        onClose:      onQRClose,
+                        onEscapePath
                     });
 
                     function updateQRCodeComponentState(newState : {|
@@ -199,10 +202,10 @@ export function initNativeQRCode({ props, serviceData, config, components, fundi
                 errorText? : string
             |}) : ZalgoPromise<void> {
                         return qrCodeComponentInstance.updateProps({
-                            cspNonce: config.cspNonce,
-                            qrPath:   url,
-                            onClose:  onQRClose,
-                            onEscapePath: onEscapePath,
+                            cspNonce:     config.cspNonce,
+                            qrPath:       url,
+                            onClose:      onQRClose,
+                            onEscapePath,
                             ...newState
                         });
                     }

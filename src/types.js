@@ -128,7 +128,7 @@ export type QRCodeProps = {|
     state? : $Values<typeof QRCODE_STATE>,
     errorText? : string,
     onClose? : () => ZalgoPromise<void>,
-    escapePathGuestPayment? : () => void
+    onEscapePath? : (selectedFundingSource : $Values<typeof FUNDING>) => void
 |};
 export type QRCodeType = ZoidComponent<QRCodeProps>;
 
