@@ -147,9 +147,7 @@ type NativePopupOptions = {|
         |}>,
         onClose : () => ZalgoPromise<void>,
         onDestroy : () => ZalgoPromise<void>,
-        onQrEscapePath : (selectedFundingSource : $Values<typeof FUNDING>) => ZalgoPromise<{|
-            buttonSessionID : string
-        |}>
+        onQrEscapePath : (selectedFundingSource : $Values<typeof FUNDING>) => ZalgoPromise<void>
     |}
 |};
 

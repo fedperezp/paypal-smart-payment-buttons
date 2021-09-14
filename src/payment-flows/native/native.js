@@ -185,8 +185,7 @@ function initNative({ props, components, config, payment, serviceData } : InitOp
 
     const onQrEscapePathCallback = (selectedFundingSource : $Values<typeof FUNDING>) => {
         return ZalgoPromise.try(() => {
-            qrEscapePath(selectedFundingSource);
-            return { buttonSessionID };
+            return qrEscapePath(selectedFundingSource);
         });
     };
 

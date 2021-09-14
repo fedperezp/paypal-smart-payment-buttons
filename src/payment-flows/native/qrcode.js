@@ -116,9 +116,7 @@ type NativeQRCodeOptions = {|
         |}>,
         onClose : () => ZalgoPromise<void>,
         onDestroy : () => ZalgoPromise<void>,
-        onQrEscapePath : (selectedFundingSource : $Values<typeof FUNDING>) => ZalgoPromise<{|
-            buttonSessionID : string
-        |}>
+        onQrEscapePath : (selectedFundingSource : $Values<typeof FUNDING>) => ZalgoPromise<void>
     |}
 |};
 
@@ -160,9 +158,9 @@ export function initNativeQRCode({ props, serviceData, config, components, fundi
             const onEscapePath = (selectedFundingSource : $Values<typeof FUNDING>) => {
                 getLogger().info(`VenmoDesktopPay_process_pay_with_${ selectedFundingSource }`).track({
                     [FPTI_KEY.STATE]:       FPTI_STATE.BUTTON,
-                    [FPTI_KEY.TRANSITION]:  `${ FPTI_TRANSITION.QR_PROCESS_PAY_WITH }_${selectedFundingSource}`
+                    [FPTI_KEY.TRANSITION]:  `${ FPTI_TRANSITION.QR_PROCESS_PAY_WITH }_${ selectedFundingSource }`
                 }).flush();
-                onQrEscapePath(selectedFundingSource);
+                return onQrEscapePath(selectedFundingSource);
             };
 
             const validatePromise = ZalgoPromise.try(() => {
