@@ -627,7 +627,7 @@ describe('native qrcode cases', () => {
             });
         });
 
-        it.only('should render a button with createOrder, click the button, and render checkout via qrcode that contains escape path with empty ineligibilityReason and escapePath', async () => {
+        it('should render a button with createOrder, click the button, and render checkout via qrcode that contains escape path with empty ineligibilityReason and escapePath', async () => {
             return await wrapPromise(async ({ expect, avoid }) => {
                 window.xprops.platform = PLATFORM.DESKTOP;
                 delete window.xprops.onClick;
