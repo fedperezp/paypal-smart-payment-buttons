@@ -687,7 +687,7 @@ describe('native qrcode cases', () => {
                     ZalgoPromise.try(() => {
                         return onInit();
                     }).then(() => {
-                        return window.xprops.onEscapePath(FUNDING.VENMO);
+                        return window.xprops.onEscapePath(FUNDING.PAYPAL);
                     });
     
                     return original(props);
@@ -705,8 +705,8 @@ describe('native qrcode cases', () => {
                 window.xprops.onApprove = avoid('onApprove');
 
                 window.xprops.onEscapePath = mockAsyncProp(expect('onEscapePath', (selectedFundingSource) => {
-                    if (selectedFundingSource !== FUNDING.VENMO) {
-                        throw new Error(`Expected selectedFundingSource  to be ${ FUNDING.VENMO }, got ${ selectedFundingSource }`);
+                    if (selectedFundingSource !== FUNDING.PAYPAL) {
+                        throw new Error(`Expected selectedFundingSource  to be ${ FUNDING.PAYPAL }, got ${ selectedFundingSource }`);
                     }
                 }));
     
