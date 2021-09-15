@@ -200,9 +200,9 @@ export function initNativeQRCode({ props, serviceData, config, components, fundi
                     });
 
                     function updateQRCodeComponentState(newState : {|
-                state : $Values<typeof QRCODE_STATE>,
-                errorText? : string
-            |}) : ZalgoPromise<void> {
+                        state : $Values<typeof QRCODE_STATE>,
+                        errorText? : string
+                    |}) : ZalgoPromise<void> {
                         return qrCodeComponentInstance.updateProps({
                             cspNonce:     config.cspNonce,
                             qrPath:       url,

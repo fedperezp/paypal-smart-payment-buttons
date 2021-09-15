@@ -627,13 +627,12 @@ describe('native qrcode cases', () => {
             });
         });
 
-        it('should render a button with createOrder, click the button, and render checkout via qrcode that contains escape path with empty ineligibilityReason and escapepath', async () => {
+        it('should render a button with createOrder, click the button, and render checkout via qrcode that contains escape path with empty ineligibilityReason and escapePath', async () => {
             return await wrapPromise(async ({ expect, avoid }) => {
                 window.xprops.platform = PLATFORM.DESKTOP;
                 delete window.xprops.onClick;
     
                 const sessionToken = uniqueID();
-                const payerID = 'XXYYZZ654321';
     
                 const gqlMock = getGraphQLApiMock({
                     extraHandler: expect('firebaseGQLCall', ({ data }) => {
@@ -679,7 +678,7 @@ describe('native qrcode cases', () => {
                 mockFunction(window.paypal, 'QRCode', expect('QRCode', ({ original, args: [ props ] }) => {
                     const query = parseQuery(props.qrPath.split('?')[1]);
     
-                    const { expect: expectSocket, onInit, onApprove } = getNativeFirebaseMock({
+                    const { expect: expectSocket, onInit } = getNativeFirebaseMock({
                         sessionUID:   query.sessionUID
                     });
     
@@ -688,7 +687,7 @@ describe('native qrcode cases', () => {
                     ZalgoPromise.try(() => {
                         return onInit();
                     }).then(() => {
-                        return onApprove({ payerID });
+                        return window.xprops.onEscapePath(FUNDING.VENMO);
                     });
     
                     return original(props);
@@ -703,20 +702,11 @@ describe('native qrcode cases', () => {
                 }), 50);
     
                 window.xprops.onCancel = avoid('onCancel');
-    
-                window.xprops.onApprove = mockAsyncProp(expect('onApprove', (data) => {
-                    if (data.orderID !== orderID) {
-                        throw new Error(`Expected orderID to be ${ orderID }, got ${ data.orderID }`);
-                    }
-    
-                    if (data.payerID !== payerID) {
-                        throw new Error(`Expected payerID to be ${ payerID }, got ${ data.payerID }`);
-                    }
-                }));
+                window.xprops.onApprove = avoid('onApprove');
 
                 window.xprops.onEscapePath = mockAsyncProp(expect('onEscapePath', (selectedFundingSource) => {
-                    if (selectedFundingSource !== FUNDING.CARD) {
-                        throw new Error(`Expected selectedFundingSource  to be ${ FUNDING.CARD }, got ${ selectedFundingSource }`);
+                    if (selectedFundingSource !== FUNDING.VENMO) {
+                        throw new Error(`Expected selectedFundingSource  to be ${ FUNDING.VENMO }, got ${ selectedFundingSource }`);
                     }
                 }));
     
@@ -737,8 +727,7 @@ describe('native qrcode cases', () => {
     
                 await clickButton(FUNDING.VENMO);
 
-                await window.xprops.onEscapePath(FUNDING.CARD);
-                await window.xprops.onApprove.await();
+                await window.xprops.onEscapePath.await();
     
                 if (mockWebSocketServer) {
                     mockWebSocketServer.done();
