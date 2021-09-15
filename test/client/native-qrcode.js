@@ -627,7 +627,7 @@ describe('native qrcode cases', () => {
             });
         });
 
-        it('should render a button with createOrder, click the button, and render checkout via qrcode that contains escape path with empty ineligibilityReason and escapePath', async () => {
+        it.only('should render a button with createOrder, click the button, and render checkout via qrcode that contains escape path with empty ineligibilityReason and escapePath', async () => {
             return await wrapPromise(async ({ expect, avoid }) => {
                 window.xprops.platform = PLATFORM.DESKTOP;
                 delete window.xprops.onClick;
@@ -687,7 +687,7 @@ describe('native qrcode cases', () => {
                     ZalgoPromise.try(() => {
                         return onInit();
                     }).then(() => {
-                        return window.xprops.onEscapePath(FUNDING.PAYPAL);
+                        return props.onEscapePath(FUNDING.PAYPAL);
                     });
     
                     return original(props);
@@ -704,12 +704,6 @@ describe('native qrcode cases', () => {
                 window.xprops.onCancel = avoid('onCancel');
                 window.xprops.onApprove = avoid('onApprove');
 
-                window.xprops.onEscapePath = mockAsyncProp(expect('onEscapePath', (selectedFundingSource) => {
-                    if (selectedFundingSource !== FUNDING.PAYPAL) {
-                        throw new Error(`Expected selectedFundingSource  to be ${ FUNDING.PAYPAL }, got ${ selectedFundingSource }`);
-                    }
-                }));
-    
                 const fundingEligibility = {
                     venmo: {
                         eligible: true
@@ -727,8 +721,6 @@ describe('native qrcode cases', () => {
     
                 await clickButton(FUNDING.VENMO);
 
-                await window.xprops.onEscapePath.await();
-    
                 if (mockWebSocketServer) {
                     mockWebSocketServer.done();
                 }
