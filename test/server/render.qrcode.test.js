@@ -37,8 +37,7 @@ function isRenderCallCorrect ({ html, debug } : {|html : string, debug : boolean
     const cspNonce_isCorrect = Boolean(html.match(RegExp(`renderQRCode.{"cspNonce":".*"`)));
     const svgPath_isCorrect = Boolean(html.match(startOfSVGString));
     const debug_isCorrect = Boolean(html.match(RegExp(`renderQRCode.*,"debug":${ debugValue }}`)));
-    const escapePath_isCorrect = (html.match(RegExp(`"escape-path__link"`, 'mgi')) || []).length === 2;
-    return cspNonce_isCorrect && svgPath_isCorrect && debug_isCorrect && escapePath_isCorrect;
+    return cspNonce_isCorrect && svgPath_isCorrect && debug_isCorrect;
     /* eslint-enable */
 }
 
