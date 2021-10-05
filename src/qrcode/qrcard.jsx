@@ -44,11 +44,13 @@ function useXProps<T>() : T {
 function QRCard({
     cspNonce,
     svgString,
-    debug
+    debug,
+    variant
 } : {|
     cspNonce : ?string,
     svgString : string,
-    debug? : boolean
+    debug? : boolean,
+    variant : string
 |}) : mixed {
     const { state, errorText, setState } = useXProps();
     const isError = () => {
@@ -77,15 +79,17 @@ function QRCard({
                     To pay, scan the QR code with <br />your Venmo app
                 </span>
             </div>
-            <QRCodeElement svgString={ svgString } />
-            <Logo />
+            <div id="qrCode">
+                <QRCodeElement svgString={ svgString } />
+                <Logo />
+            </div>
         </div>
     );
 
     return (
         <Fragment>
             <style nonce={ cspNonce }> { cardStyle } </style>
-            <div id="view-boxes" className={ state }>
+            <div id="view-boxes" className={ state + " " + variant }>
                 { isError() ? errorMessage : frontView }
                 <div className="card" id="back-view" >
                     <span className="mark">
@@ -107,7 +111,7 @@ function QRCard({
                     onClick={ () => setState(debugging_nextStateMap.get(state)) }
                 >Next State</button>}
             </div>
-            <p className="escape-path">Don&apos;t have the app? Pay with <span className="escape-path__link" onClick={ () => handleClick(FUNDING.PAYPAL) }>PayPal</span> or <span className="escape-path__link" onClick={ () => handleClick(FUNDING.CARD) }>Credit/Debit card</span></p>
+            <p className={"escape-path " + variant }>Don&apos;t have the app? Pay with <span className="escape-path__link" onClick={ () => handleClick(FUNDING.PAYPAL) }>PayPal</span> or <span className="escape-path__link" onClick={ () => handleClick(FUNDING.CARD) }>Credit/Debit card</span></p>
         </Fragment>
     );
 }
@@ -115,19 +119,22 @@ function QRCard({
 type RenderQRCodeOptions = {|
     cspNonce? : string,
     svgString : string,
-    debug : boolean
+    debug : boolean,
+    variant : string,
 |};
 
 export function renderQRCode({
     cspNonce = '',
     svgString,
-    debug = false
+    debug = false,
+    variant = ''
 } : RenderQRCodeOptions) {
     render(
         <QRCard
             cspNonce={ cspNonce }
             svgString={ svgString }
             debug={ debug }
+            variant={ variant }
         />,
         getBody()
     );

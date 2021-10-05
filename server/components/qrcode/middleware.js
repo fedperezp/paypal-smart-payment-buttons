@@ -14,10 +14,11 @@ type QRcodeMiddlewareOptions = {|
     logger? : LoggerType,
     cache? : CacheType,
     cdn? : boolean,
-    getInstanceLocationInformation : () => InstanceLocationInformation
+    getInstanceLocationInformation : () => InstanceLocationInformation,
+    getQRCodeExperiment : () => string
 |};
 
-export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLocalOrTest(), getInstanceLocationInformation } : QRcodeMiddlewareOptions = {}) : ExpressMiddleware {
+export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLocalOrTest(), getInstanceLocationInformation, getQRCodeExperiment } : QRcodeMiddlewareOptions = {}) : ExpressMiddleware {
     const useLocal = !cdn;
     const locationInformation = getInstanceLocationInformation();
 
@@ -26,7 +27,7 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
         app: async ({ req, res, params, meta, logBuffer }) => {
             logger.info(req, EVENT.RENDER);
 
-            const { cspNonce, qrPath, debug } = getParams(params, req, res);
+            const { cspNonce, qrPath, debug, clientID } = getParams(params, req, res);
 
             if (!qrPath) {
                 return clientErrorResponse(res, 'Please provide a qrPath query parameter');
@@ -47,6 +48,8 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
 
             const client = await getSmartQRCodeClientScript({ debug, logBuffer, cache, useLocal, locationInformation });
 
+            const variant = await getQRCodeExperiment(req, { clientID });
+
             logger.info(req, `qrcode_client_version_${ client.version }`);
             logger.info(req, `qrcode_params`, { params: JSON.stringify(params) });
 
@@ -66,7 +69,8 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
     spbQRCode.renderQRCode(${ safeJSON({
         cspNonce,
         svgString,
-        debug
+        debug,
+        variant
     }) })
                 </script>
             </body>

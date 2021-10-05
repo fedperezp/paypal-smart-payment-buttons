@@ -170,11 +170,23 @@ export const cardStyle : string = `
         opacity: 0;
     }
     #front-view {
-        background-color: white;
-        border: 1px solid #888C94;
         z-index: 2;
         transform: rotateY(0deg);
         justify-content: flex-end;
+        border-radius: 0;
+    }
+    #qrCode {
+        background-color: white;
+        display: inline-flex;
+        align-items: center;
+        flex-direction: column;
+    }
+    #qrCode > img {
+        padding: 16px 16px 0px;
+    }
+    #qrCode > img + img { 
+        padding-top: 12px;
+        padding-bottom: 12px; 
     }
     #front-view > svg,
     #front-view > img {
@@ -183,6 +195,10 @@ export const cardStyle : string = `
     #front-view > img + img { 
         padding-top: 12px;
         padding-bottom: 12px; 
+    }
+    #view-boxes.Trmt_Venmo_QR_Desktop #qrCode {
+        border: 1px solid #888C94;
+        border-radius: 8px;
     }
     #qr-code {
         min-width: 160px;
@@ -252,6 +268,20 @@ export const cardStyle : string = `
     }
     .escape-path__link:hover {
         cursor: pointer;
+    }
+    .escape-path.Trmt_Venmo_QR_Desktop{
+        background: #55585E;
+        color: #FFFFFF;
+    }
+    .escape-path.Trmt_Venmo_QR_Desktop .escape-path__link {
+        font-weight: 600;
+        color: #FFFFFF;
+    }
+    #view-boxes.Trmt_Venmo_QR_Desktop #instructions {
+        background: #2F3033;
+        color: #FFFFFF;
+        font-weight: 600;
+        border-radius: 0;
     }
     `;
 
