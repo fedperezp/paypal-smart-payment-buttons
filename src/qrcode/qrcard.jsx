@@ -89,7 +89,7 @@ function QRCard({
     return (
         <Fragment>
             <style nonce={ cspNonce }> { cardStyle } </style>
-            <div id="view-boxes" className={ state + " " + variant }>
+            <div id="view-boxes" className={ `${state} ${variant}`}>
                 { isError() ? errorMessage : frontView }
                 <div className="card" id="back-view" >
                     <span className="mark">
@@ -111,7 +111,7 @@ function QRCard({
                     onClick={ () => setState(debugging_nextStateMap.get(state)) }
                 >Next State</button>}
             </div>
-            <p className={"escape-path " + variant }>Don&apos;t have the app? Pay with <span className="escape-path__link" onClick={ () => handleClick(FUNDING.PAYPAL) }>PayPal</span> or <span className="escape-path__link" onClick={ () => handleClick(FUNDING.CARD) }>Credit/Debit card</span></p>
+            <p className={`escape-path escape-path--${variant}`}>Don&apos;t have the app? Pay with <span className="escape-path__link" onClick={ () => handleClick(FUNDING.PAYPAL) }>PayPal</span> or <span className="escape-path__link" onClick={ () => handleClick(FUNDING.CARD) }>Credit/Debit card</span></p>
         </Fragment>
     );
 }

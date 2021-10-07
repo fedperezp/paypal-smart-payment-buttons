@@ -2,23 +2,26 @@
 
 import { clientErrorResponse, htmlResponse, allowFrame, defaultLogger, safeJSON, sdkMiddleware,
     isLocalOrTest, type ExpressMiddleware } from '../../lib';
-import type { LoggerType, CacheType, InstanceLocationInformation } from '../../types';
+import type { LoggerType, CacheType, ExpressRequest, InstanceLocationInformation } from '../../types';
 
-import { EVENT, VENMO_BLUE } from './constants';
-import { getParams } from './params';
+import { EVENT, VENMO_BLUE, VENMO_DESKTOP_EXP } from './constants';
+import { getParams, getQRVariant } from './params';
 import { getSmartQRCodeClientScript } from './script';
 import { QRCode } from './node-qrcode';
 
+type QRCodeElmoParam = {|
+    clientID : string
+|};
 
 type QRcodeMiddlewareOptions = {|
     logger? : LoggerType,
     cache? : CacheType,
     cdn? : boolean,
     getInstanceLocationInformation : () => InstanceLocationInformation,
-    getQRCodeExperiment : () => string
+    getQRCodeExperiment : (req : ExpressRequest, params : QRCodeElmoParam) => Promise<string>
 |};
 
-export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLocalOrTest(), getInstanceLocationInformation, getQRCodeExperiment } : QRcodeMiddlewareOptions = {}) : ExpressMiddleware {
+export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLocalOrTest(), getInstanceLocationInformation, getQRCodeExperiment = () => Promise.resolve(VENMO_DESKTOP_EXP.VENMO_DESKTOP_CTRL) } : QRcodeMiddlewareOptions = {}) : ExpressMiddleware {
     const useLocal = !cdn;
     const locationInformation = getInstanceLocationInformation();
 
@@ -48,7 +51,7 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
 
             const client = await getSmartQRCodeClientScript({ debug, logBuffer, cache, useLocal, locationInformation });
 
-            const variant = await getQRCodeExperiment(req, { clientID });
+            const experiment = await getQRCodeExperiment(req, { clientID });
 
             logger.info(req, `qrcode_client_version_${ client.version }`);
             logger.info(req, `qrcode_params`, { params: JSON.stringify(params) });
@@ -70,7 +73,7 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
         cspNonce,
         svgString,
         debug,
-        variant
+        variant: getQRVariant(experiment)
     }) })
                 </script>
             </body>

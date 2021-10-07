@@ -2,6 +2,7 @@
 import url from 'url';
 import { ENV, DEFAULT_COUNTRY, COUNTRY_LANGS } from '@paypal/sdk-constants';
 
+import { QR_VARIANT, VENMO_DESKTOP_EXP } from "./constants"
 import type { ExpressRequest, ExpressResponse, LocaleType } from '../../types';
 import { getCSPNonce } from '../../lib';
 
@@ -27,6 +28,10 @@ type RequestParams = {|
 function getClientIDFromQRPath(qrPath: string) {
     const query = url.parse(qrPath, true).query
     return query.clientID;
+}
+
+export function getQRVariant(experiment: $Values<typeof VENMO_DESKTOP_EXP>): string {
+    return QR_VARIANT[experiment]
 }
 
 export function getParams(params : ParamsType, req : ExpressRequest, res : ExpressResponse) : RequestParams {
