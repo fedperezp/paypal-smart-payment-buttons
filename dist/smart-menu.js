@@ -565,9 +565,8 @@ window.spb = function(modules) {
                         }
                     }
                     if (_result2 instanceof ZalgoPromise && (_result2.resolved || _result2.rejected)) {
-                        var promiseResult = _result2;
-                        promiseResult.resolved ? promise.resolve(promiseResult.value) : promise.reject(promiseResult.error);
-                        promiseResult.errorHandled = !0;
+                        _result2.resolved ? promise.resolve(_result2.value) : promise.reject(_result2.error);
+                        _result2.errorHandled = !0;
                     } else utils_isPromise(_result2) ? _result2 instanceof ZalgoPromise && (_result2.resolved || _result2.rejected) ? _result2.resolved ? promise.resolve(_result2.value) : promise.reject(_result2.error) : chain(_result2, promise) : promise.resolve(_result2);
                 }
                 handlers.length = 0;
@@ -632,7 +631,7 @@ window.spb = function(modules) {
         ZalgoPromise.all = function(promises) {
             var promise = new ZalgoPromise;
             var count = promises.length;
-            var results = [].slice();
+            var results = [];
             if (!count) {
                 promise.resolve(results);
                 return promise;

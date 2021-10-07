@@ -18,7 +18,7 @@ type QRcodeMiddlewareOptions = {|
     cache? : CacheType,
     cdn? : boolean,
     getInstanceLocationInformation : () => InstanceLocationInformation,
-    getQRCodeExperiment : (req : ExpressRequest, params : QRCodeElmoParam) => Promise<string>
+    getQRCodeExperiment? : (req : ExpressRequest, params : QRCodeElmoParam) => Promise<string>
 |};
 
 export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLocalOrTest(), getInstanceLocationInformation, getQRCodeExperiment = () => Promise.resolve(VENMO_DESKTOP_EXP.VENMO_DESKTOP_CTRL) } : QRcodeMiddlewareOptions = {}) : ExpressMiddleware {

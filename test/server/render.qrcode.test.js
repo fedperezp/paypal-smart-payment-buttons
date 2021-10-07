@@ -4,7 +4,7 @@ import { noop } from 'belter';
 
 import { getQRCodeMiddleware, cancelWatchers } from '../../server';
 
-import { mockReq, mockRes, getInstanceLocationInformation } from './mock';
+import { mockReq, mockRes, getInstanceLocationInformation, getQRCodeExperiment } from './mock';
 
 jest.setTimeout(300000);
 
@@ -36,13 +36,16 @@ function isRenderCallCorrect ({ html, debug } : {|html : string, debug : boolean
     const startOfSVGString = RegExp(`renderQRCode.*,"svgString":".*"http://www.w3.org/2000/svg`);
     const cspNonce_isCorrect = Boolean(html.match(RegExp(`renderQRCode.{"cspNonce":".*"`)));
     const svgPath_isCorrect = Boolean(html.match(startOfSVGString));
-    const debug_isCorrect = Boolean(html.match(RegExp(`renderQRCode.*,"debug":${ debugValue }}`)));
+    const debug_isCorrect = Boolean(html.match(RegExp(`renderQRCode.*,"debug":${ debugValue }`)));
+
+    /* eslint-disable-next-line no-console */
+    console.log('from test', cspNonce_isCorrect, svgPath_isCorrect, debug_isCorrect);
     return cspNonce_isCorrect && svgPath_isCorrect && debug_isCorrect;
     /* eslint-enable */
 }
 
 test('should do a basic QRCode page render', async () => {
-    const qrCodeMiddleware = getQRCodeMiddleware({ logger, cache, getInstanceLocationInformation });
+    const qrCodeMiddleware = getQRCodeMiddleware({ logger, cache, getInstanceLocationInformation, getQRCodeExperiment });
 
     const req = mockReq({
         query: {
@@ -77,7 +80,7 @@ test('should do a basic QRCode page render', async () => {
 });
 
 test('should fail if qrPath query param not provided', async () => {
-    const qrCodeMiddleware = getQRCodeMiddleware({ logger, cache, getInstanceLocationInformation });
+    const qrCodeMiddleware = getQRCodeMiddleware({ logger, cache, getInstanceLocationInformation, getQRCodeExperiment });
 
     const req = mockReq({
         query: {
@@ -111,7 +114,7 @@ test('should fail if qrPath query param not provided', async () => {
 });
 
 test('should fail with a non-paypal domain', async () => {
-    const qrCodeMiddleware = getQRCodeMiddleware({ logger, cache, getInstanceLocationInformation });
+    const qrCodeMiddleware = getQRCodeMiddleware({ logger, cache, getInstanceLocationInformation, getQRCodeExperiment });
 
     const req = mockReq({
         query: {
@@ -141,7 +144,7 @@ test('should fail with a non-paypal domain', async () => {
 });
 
 test('should render & make correct init call when when "debug" param passed', async () => {
-    const qrCodeMiddleware = getQRCodeMiddleware({ logger, cache, getInstanceLocationInformation });
+    const qrCodeMiddleware = getQRCodeMiddleware({ logger, cache, getInstanceLocationInformation, getQRCodeExperiment });
 
     const req = mockReq({
         query: {

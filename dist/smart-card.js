@@ -175,17 +175,17 @@ window.smartCard = function(modules) {
         })), S.d(N, "QUERY_BOOL", (function() {
             return o;
         })), S.d(N, "UNKNOWN", (function() {
-            return Z;
-        })), S.d(N, "PROTOCOL", (function() {
             return O;
+        })), S.d(N, "PROTOCOL", (function() {
+            return Z;
         })), S.d(N, "PAGE_TYPES", (function() {
             return i;
         })), S.d(N, "MERCHANT_ID_MAX", (function() {
             return M;
         })), S.d(N, "PLATFORM", (function() {
-            return h;
-        })), S.d(N, "TYPES", (function() {
             return k;
+        })), S.d(N, "TYPES", (function() {
+            return g;
         }));
         var R = {
             AD: "AD",
@@ -427,8 +427,7 @@ window.smartCard = function(modules) {
             TL: "tl",
             TR: "tr",
             VI: "vi",
-            ZH: "zh",
-            ZH_HANT: "zh_Hant"
+            ZH: "zh"
         }, T = {
             AD: [ t.EN, t.FR, t.ES, t.ZH ],
             AE: [ t.EN, t.FR, t.ES, t.ZH, t.AR ],
@@ -506,7 +505,7 @@ window.smartCard = function(modules) {
             GT: [ t.ES, t.EN, t.FR, t.ZH ],
             GW: [ t.EN, t.FR, t.ES, t.ZH ],
             GY: [ t.EN, t.FR, t.ES, t.ZH ],
-            HK: [ t.EN, t.ZH_HANT, t.ZH ],
+            HK: [ t.EN, t.ZH ],
             HN: [ t.ES, t.EN, t.FR, t.ZH ],
             HR: [ t.EN ],
             HU: [ t.HU, t.EN, t.FR, t.ES, t.ZH ],
@@ -614,7 +613,7 @@ window.smartCard = function(modules) {
             TR: [ t.TR, t.EN ],
             TT: [ t.EN, t.FR, t.ES, t.ZH ],
             TV: [ t.EN, t.FR, t.ES, t.ZH ],
-            TW: [ t.ZH_HANT, t.ZH, t.EN ],
+            TW: [ t.ZH, t.EN ],
             TZ: [ t.EN, t.FR, t.ES, t.ZH ],
             UA: [ t.EN, t.RU, t.FR, t.ES, t.ZH ],
             UG: [ t.EN, t.FR, t.ES, t.ZH ],
@@ -793,7 +792,7 @@ window.smartCard = function(modules) {
         }, o = {
             TRUE: "true",
             FALSE: "false"
-        }, Z = "unknown", O = {
+        }, O = "unknown", Z = {
             HTTP: "http",
             HTTPS: "https"
         }, i = {
@@ -873,8 +872,7 @@ window.smartCard = function(modules) {
             PAY_NOW: "pay_now",
             STICKINESS_ID: "stickiness_id",
             TIMESTAMP: "t",
-            OPTION_SELECTED: "optsel",
-            USER_IDENTITY_METHOD: "user_identity_method"
+            OPTION_SELECTED: "optsel"
         }, p = {
             COMMIT: "commit",
             CONTINUE: "continue"
@@ -931,10 +929,10 @@ window.smartCard = function(modules) {
             PAY_IN_4: "payIn4",
             PAYLATER: "paylater",
             CREDIT: "credit"
-        }, h = {
+        }, k = {
             DESKTOP: "desktop",
             MOBILE: "mobile"
-        }, k = !0;
+        }, g = !0;
     } ]);
 }, function(module, __webpack_exports__, __webpack_require__) {
     "use strict";
@@ -1454,9 +1452,8 @@ window.smartCard = function(modules) {
                         }
                     }
                     if (_result2 instanceof ZalgoPromise && (_result2.resolved || _result2.rejected)) {
-                        var promiseResult = _result2;
-                        promiseResult.resolved ? promise.resolve(promiseResult.value) : promise.reject(promiseResult.error);
-                        promiseResult.errorHandled = !0;
+                        _result2.resolved ? promise.resolve(_result2.value) : promise.reject(_result2.error);
+                        _result2.errorHandled = !0;
                     } else utils_isPromise(_result2) ? _result2 instanceof ZalgoPromise && (_result2.resolved || _result2.rejected) ? _result2.resolved ? promise.resolve(_result2.value) : promise.reject(_result2.error) : chain(_result2, promise) : promise.resolve(_result2);
                 }
                 handlers.length = 0;
@@ -1521,7 +1518,7 @@ window.smartCard = function(modules) {
         ZalgoPromise.all = function(promises) {
             var promise = new ZalgoPromise;
             var count = promises.length;
-            var results = [].slice();
+            var results = [];
             if (!count) {
                 promise.resolve(results);
                 return promise;
@@ -2324,53 +2321,26 @@ window.smartCard = function(modules) {
     var LSAT_UPGRADE_EXCLUDED_MERCHANTS = [ "AQipcJ1uXz50maKgYx49lKUB8MlSOXP573M6cpsFpHqDZOqnopsJpfYY7bQC_9CtQJsEhGlk8HLs2oZz", "Aco-yrRKihknb5vDBbDOdtYywjYMEPaM7mQg6kev8VDAz01lLA88J4oAUnF4UV9F_InqkqX7K62_jOjx", "AeAiB9K2rRsTXsFKZt4FMAQ8a6VEu4hijducis3a8NcIjV2J_c5I2H2PYhT3qCOwxT8P4l17skqgBlmg", "AXKrWRqEvxiDoUIZQaD1tFi2QhtmhWve3yTDBi58bxWjieYJ9j73My-yJmM7hP00JvOXu4YD6L2eaI5O", "AfRTnXv_QcuVyalbUxThtgk1xTygygsdevlBUTz36dDgD6XZNHp3Ym99a-mjMaokXyTTiI8VJ9mRgaFB", "AejlsIlg_KjKjmLKqxJqFIAwn3ZP02emx41Z2It4IfirQ-nNgZgzWk1CU-Q1QDbYUXjWoYJZ4dq1S2pK", "AQXD7-m_2yMo-5AxJ1fQaPeEWYDE7NZ9XrLzEXeiPLTHDu9vfe_T0foF8BoX8K5cMfXuRDysUEmhw-8Z" ];
     var AUTO_FLUSH_LEVEL = [ "warn", "error" ];
     var LOG_LEVEL_PRIORITY = [ "error", "warn", "info", "debug" ];
-    var sendBeacon = function(_ref2) {
-        var url = _ref2.url, data = _ref2.data, _ref2$useBlob = _ref2.useBlob, useBlob = void 0 === _ref2$useBlob || _ref2$useBlob;
-        try {
-            var json = JSON.stringify(data);
-            if (useBlob) {
-                var blob = new Blob([ json ], {
-                    type: "application/json"
-                });
-                return window.navigator.sendBeacon(url, blob);
-            }
-            return window.navigator.sendBeacon(url, json);
-        } catch (e) {
-            return !1;
-        }
-    };
-    var extendIfDefined = function(target, source) {
-        for (var key in source) source.hasOwnProperty(key) && (target[key] = source[key]);
-    };
     function httpTransport(_ref) {
         var url = _ref.url, method = _ref.method, headers = _ref.headers, json = _ref.json, _ref$enableSendBeacon = _ref.enableSendBeacon, enableSendBeacon = void 0 !== _ref$enableSendBeacon && _ref$enableSendBeacon;
         return promise_ZalgoPromise.try((function() {
-            var beaconResult = !1;
-            (function(_ref) {
-                var headers = _ref.headers, enableSendBeacon = _ref.enableSendBeacon;
-                var hasHeaders = headers && Object.keys(headers).length;
-                return !!(window && window.navigator.sendBeacon && !hasHeaders && enableSendBeacon && window.Blob);
-            })({
-                headers: headers,
-                enableSendBeacon: enableSendBeacon
-            }) && (beaconResult = function(url) {
-                return "https://api2.amplitude.com/2/httpapi" === url;
-            }(url) ? sendBeacon({
-                url: url,
-                data: json,
-                useBlob: !1
-            }) : sendBeacon({
-                url: url,
-                data: json,
-                useBlob: !0
-            }));
-            return beaconResult || request({
+            var hasHeaders = headers && Object.keys(headers).length;
+            if (window && window.navigator.sendBeacon && !hasHeaders && enableSendBeacon && window.Blob) try {
+                var blob = new Blob([ JSON.stringify(json) ], {
+                    type: "application/json"
+                });
+                return window.navigator.sendBeacon(url, blob);
+            } catch (e) {}
+            return request({
                 url: url,
                 method: method,
                 headers: headers,
                 json: json
             });
         })).then(src_util_noop);
+    }
+    function extendIfDefined(target, source) {
+        for (var key in source) source.hasOwnProperty(key) && source[key] && !target[key] && (target[key] = source[key]);
     }
     var _FUNDING_SKIP_LOGIN, _AMPLITUDE_API_KEY;
     (_FUNDING_SKIP_LOGIN = {}).paypal = "paypal", _FUNDING_SKIP_LOGIN.paylater = "paypal", 
@@ -2421,7 +2391,9 @@ window.smartCard = function(modules) {
                             amplitudeApiKey && transport({
                                 method: "POST",
                                 url: "https://api2.amplitude.com/2/httpapi",
-                                headers: {},
+                                headers: {
+                                    "content-type": "application/json"
+                                },
                                 json: {
                                     api_key: amplitudeApiKey,
                                     events: tracking.map((function(payload) {
@@ -2430,8 +2402,7 @@ window.smartCard = function(modules) {
                                             event_properties: payload
                                         }, payload);
                                     }))
-                                },
-                                enableSendBeacon: enableSendBeacon
+                                }
                             }).catch(src_util_noop);
                             events = [];
                             tracking = [];
@@ -2494,9 +2465,6 @@ window.smartCard = function(modules) {
                         immediateFlush();
                     }));
                     window.addEventListener("unload", (function() {
-                        immediateFlush();
-                    }));
-                    window.addEventListener("pagehide", (function() {
                         immediateFlush();
                     }));
                 }
@@ -2565,7 +2533,7 @@ window.smartCard = function(modules) {
     function promiseNoop() {
         return promise_ZalgoPromise.resolve();
     }
-    function util_getBody() {
+    function getBody() {
         var body = document.body;
         if (!body) throw new Error("Document body not found");
         return body;
@@ -2933,7 +2901,7 @@ window.smartCard = function(modules) {
             }));
             window.fnCallback = resolve;
             setTimeout(resolve, timeout);
-            var body = util_getBody();
+            var body = getBody();
             body.appendChild(configScript);
             body.appendChild(fraudnetScript);
         }));
@@ -4323,7 +4291,7 @@ window.smartCard = function(modules) {
             props: getCardProps({
                 facilitatorAccessToken: _ref3.facilitatorAccessToken
             })
-        }), i = util_getBody(), l.__ && l.__(u, i), r = !1 ? null : i.__k, f = [], j(i, u = i.__k = v(d, null, [ u ]), r || e, e, void 0 !== i.ownerSVGElement, r ? null : i.firstChild ? n.call(i.childNodes) : null, f, r ? r.__e : i.firstChild, !1), 
+        }), i = getBody(), l.__ && l.__(u, i), r = !1 ? null : i.__k, f = [], j(i, u = i.__k = v(d, null, [ u ]), r || e, e, void 0 !== i.ownerSVGElement, r ? null : i.firstChild ? n.call(i.childNodes) : null, f, r ? r.__e : i.firstChild, !1), 
         z(f, u);
         var u, i, r, f;
     }

@@ -1,6 +1,7 @@
 /* @flow */
 /* eslint no-restricted-globals: off, promise/no-native: off, compat/compat: off */
 
+import { VENMO_DESKTOP_EXP } from '../../server/components/qrcode/constants';
 import type { ExpressRequest, InstanceLocationInformation, SDKLocationInformation } from '../../server/types';
 
 type MockReq = {|
@@ -245,6 +246,10 @@ export function getInstanceLocationInformation() : InstanceLocationInformation {
         cdnHostName:  'paypal.com',
         paypalDomain: 'paypal.com'
     };
+}
+
+export function getQRCodeExperiment() : Promise<string> {
+    return Promise.resolve(VENMO_DESKTOP_EXP.VENMO_DESKTOP_CTRL);
 }
 
 export function getSDKLocationInformation() : Promise<SDKLocationInformation> {
