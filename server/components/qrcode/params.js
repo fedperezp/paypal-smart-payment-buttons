@@ -28,15 +28,6 @@ type RequestParams = {|
     clientID : string
 |};
 
-function getClientIDFromQRPath(qrPath : string) : string {
-    try {
-        const query = url.parse(qrPath, true).query;
-        return query.clientID;
-    } catch (error) {
-        return '';
-    }
-}
-
 export function getQRVariant(experiment : $Values<typeof VENMO_DESKTOP_EXP>) : string {
     return QR_VARIANT[experiment];
 }
@@ -47,7 +38,8 @@ export function getParams(params : ParamsType, req : ExpressRequest, res : Expre
         qrPath,
         demo,
         locale = {},
-        debug = false
+        debug = false,
+        clientID
     } = params;
 
     const {
@@ -56,7 +48,6 @@ export function getParams(params : ParamsType, req : ExpressRequest, res : Expre
     } = locale;
     
     const cspNonce = getCSPNonce(res);
-    const clientID = getClientIDFromQRPath(qrPath);
 
     return {
         env,
