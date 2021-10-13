@@ -1,4 +1,5 @@
 /* @flow */
+import { FUNDING } from '@paypal/sdk-constants/src';
 
 export const SMART_PAYMENT_BUTTONS = 'smart-payment-buttons';
 
@@ -112,6 +113,7 @@ export const FPTI_TRANSITION = {
     CHECKOUT_SHIPPING_CHANGE: ('process_checkout_shipping_change' : 'process_checkout_shipping_change'),
     CHECKOUT_APPROVE:         ('process_checkout_approve' : 'process_checkout_approve'),
     CHECKOUT_CANCEL:          ('process_checkout_cancel' : 'process_checkout_cancel'),
+    CHECKOUT_ERROR:           ('process_checkout_error' : 'process_checkout_error'),
 
     TOKENIZE_APPROVE:         ('process_tokenize_approve' : 'process_tokenize_approve'),
 
@@ -232,6 +234,7 @@ export const FRAME_NAME = {
 };
 
 export const AMPLITUDE_KEY = {
+    TIME:    'time',
     USER_ID: 'user_id'
 };
 
@@ -267,3 +270,22 @@ export const BUTTON_LABEL = {
 export const STATUS_CODES = {
     TOO_MANY_REQUESTS: 429
 };
+
+export const APM_LIST = [
+    FUNDING.IDEAL,
+    FUNDING.BANCONTACT,
+    FUNDING.GIROPAY,
+    FUNDING.SOFORT,
+    FUNDING.EPS,
+    FUNDING.MYBANK,
+    FUNDING.P24,
+    FUNDING.PAYU,
+    FUNDING.BLIK,
+    FUNDING.TRUSTLY,
+    FUNDING.ZIMPLER,
+    FUNDING.MAXIMA,
+    FUNDING.OXXO,
+    FUNDING.BOLETO,
+    FUNDING.WECHATPAY,
+    FUNDING.MERCADOPAGO
+];

@@ -8,7 +8,7 @@ import { getParent, getTop, type CrossDomainWindowType } from 'cross-domain-util
 import type { ProxyWindow, ConnectOptions } from '../types';
 import { type CreateBillingAgreement, type CreateSubscription } from '../props';
 import { exchangeAccessTokenForAuthCode, getConnectURL, updateButtonClientConfig, getSmartWallet, loadFraudnet  } from '../api';
-import { CONTEXT, TARGET_ELEMENT, BUYER_INTENT, FPTI_TRANSITION, FPTI_CONTEXT_TYPE } from '../constants';
+import { CONTEXT, TARGET_ELEMENT, BUYER_INTENT, FPTI_TRANSITION, FPTI_CONTEXT_TYPE, APM_LIST } from '../constants';
 import { unresolvedPromise, getLogger } from '../lib';
 import { openPopup } from '../ui';
 import { FUNDING_SKIP_LOGIN } from '../config';
@@ -18,6 +18,11 @@ import type { PaymentFlow, PaymentFlowInstance, SetupOptions, InitOptions } from
 export const CHECKOUT_POPUP_DIMENSIONS = {
     WIDTH:  500,
     HEIGHT: 590
+};
+
+export const CHECKOUT_APM_POPUP_DIMENSIONS = {
+    WIDTH:  1282,
+    HEIGHT: 720
 };
 
 let checkoutOpen = false;
@@ -101,7 +106,17 @@ function getContext({ win, isClick } : {| win : ?(CrossDomainWindowType | ProxyW
     return CONTEXT.IFRAME;
 }
 
-function initCheckout({ props, components, serviceData, payment, config } : InitOptions) : PaymentFlowInstance {
+function getDimensions(fundingSource : string) : {| width : number, height : number |} {
+    if (APM_LIST.indexOf(fundingSource) !== -1) {
+        getLogger().info(`popup_dimensions_value_${ fundingSource }`).flush();
+        return { width: CHECKOUT_APM_POPUP_DIMENSIONS.WIDTH, height: CHECKOUT_APM_POPUP_DIMENSIONS.HEIGHT };
+    } else {
+        getLogger().info(`popup_dimensions_${ fundingSource }`).flush();
+        return { width: CHECKOUT_POPUP_DIMENSIONS.WIDTH, height: CHECKOUT_POPUP_DIMENSIONS.HEIGHT };
+    }
+}
+
+function initCheckout({ props, components, serviceData, payment, config, restart: fullRestart } : InitOptions) : PaymentFlowInstance {
     if (checkoutOpen) {
         throw new Error(`Checkout already rendered`);
     }
@@ -249,7 +264,17 @@ function initCheckout({ props, components, serviceData, payment, config } : Init
                 }
             },
 
-            onError,
+            onError: (err) => {
+                getLogger()
+                    .info(`checkout_flow_error `, { err: stringifyError(err) })
+                    .track({
+                        [FPTI_KEY.TRANSITION]:   FPTI_TRANSITION.CHECKOUT_ERROR,
+                        [FPTI_KEY.ERROR_DESC]:   stringifyError(err)
+                    }).flush();
+                return onError(err);
+            },
+
+            dimensions: getDimensions(fundingSource),
 
             fundingSource,
             card,
@@ -260,7 +285,10 @@ function initCheckout({ props, components, serviceData, payment, config } : Init
             clientMetadataID: cmid,
             enableFunding,
             standaloneFundingSource,
-            branded
+            branded,
+            restart:          () => {
+                return fullRestart({ payment: { ...payment, win } });
+            }
         });
     };
 
@@ -288,7 +316,7 @@ function initCheckout({ props, components, serviceData, payment, config } : Init
     const restart = memoize(() : ZalgoPromise<void> => {
         // Closing any previous checkout popup before restarting
         return close().finally(() => {
-            return initCheckout({ props, components, serviceData, config, payment: { button, fundingSource, card, buyerIntent, isClick: false } })
+            return initCheckout({ props, components, serviceData, config, payment: { button, fundingSource, card, buyerIntent, isClick: false }, restart })
                 .start().finally(unresolvedPromise);
         });
     });
@@ -297,7 +325,8 @@ function initCheckout({ props, components, serviceData, payment, config } : Init
         return ZalgoPromise.try(() => {
             if (!win && supportsPopups()) {
                 try {
-                    win = openPopup({ width: CHECKOUT_POPUP_DIMENSIONS.WIDTH, height: CHECKOUT_POPUP_DIMENSIONS.HEIGHT });
+                    const { width, height } = getDimensions(fundingSource);
+                    win = openPopup({ width, height });
                 } catch (err) {
                     getLogger().warn('popup_open_error_iframe_fallback', { err: stringifyError(err) });
 

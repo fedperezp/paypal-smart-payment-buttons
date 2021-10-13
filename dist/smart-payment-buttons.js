@@ -3049,7 +3049,7 @@ window.spb = function(modules) {
             logger_getLogger().info("rest_api_create_order_token");
             var headers = ((_headers15 = {}).authorization = "Bearer " + accessToken, _headers15["paypal-partner-attribution-id"] = partnerAttributionID, 
             _headers15["paypal-client-metadata-id"] = clientMetadataID, _headers15["x-app-name"] = "smart-payment-buttons", 
-            _headers15["x-app-version"] = "5.0.61", _headers15);
+            _headers15["x-app-version"] = "5.0.68", _headers15);
             var paymentSource = {
                 token: {
                     id: paymentMethodID,
@@ -5361,15 +5361,18 @@ window.spb = function(modules) {
                         return promise_ZalgoPromise.try((function() {
                             if (!win && supportsPopups()) try {
                                 win = function(_ref) {
+                                    var _ref$closeOnUnload = _ref.closeOnUnload;
                                     var win = function(win) {
                                         if (!isSameDomain(win)) throw new Error("Expected window to be same domain");
                                         return win;
                                     }(function(url, options) {
-                                        var width = (options = options || {}).width, height = options.height;
+                                        var _options$closeOnUnloa = (options = options || {}).closeOnUnload, closeOnUnload = void 0 === _options$closeOnUnloa ? 1 : _options$closeOnUnloa, _options$name = options.name, name = void 0 === _options$name ? "" : _options$name, width = options.width, height = options.height;
                                         var top = 0;
                                         var left = 0;
                                         width && (window.outerWidth ? left = Math.round((window.outerWidth - width) / 2) + window.screenX : window.screen.width && (left = Math.round((window.screen.width - width) / 2)));
                                         height && (window.outerHeight ? top = Math.round((window.outerHeight - height) / 2) + window.screenY : window.screen.height && (top = Math.round((window.screen.height - height) / 2)));
+                                        delete options.closeOnUnload;
+                                        delete options.name;
                                         width && height && (options = _extends({
                                             top: top,
                                             left: left,
@@ -5381,8 +5384,6 @@ window.spb = function(modules) {
                                             resizable: 1,
                                             scrollbars: 1
                                         }, options));
-                                        var name = options.name || "";
-                                        delete options.name;
                                         var params = Object.keys(options).map((function(key) {
                                             if (null != options[key]) return key + "=" + ("string" == typeof (item = options[key]) ? item : item && item.toString && "function" == typeof item.toString ? item.toString() : {}.toString.call(item));
                                             var item;
@@ -5397,13 +5398,14 @@ window.spb = function(modules) {
                                             var err;
                                             throw new dom_PopupOpenError("Can not open popup window - blocked");
                                         }
-                                        window.addEventListener("unload", (function() {
+                                        closeOnUnload && window.addEventListener("unload", (function() {
                                             return win.close();
                                         }));
                                         return win;
                                     }(0, {
                                         width: _ref.width,
-                                        height: _ref.height
+                                        height: _ref.height,
+                                        closeOnUnload: void 0 === _ref$closeOnUnload ? 1 : _ref$closeOnUnload
                                     }));
                                     var doc = win.document;
                                     !function(win, el) {
@@ -7026,26 +7028,23 @@ window.spb = function(modules) {
                             onClose();
                         }));
                     };
-                    var onEscapePath = function(selectedFundingSource) {
+                    var onEscapePath = function(win, selectedFundingSource) {
                         var _getLogger$info$track5;
                         logger_getLogger().info("VenmoDesktopPay_process_pay_with_" + selectedFundingSource).track((_getLogger$info$track5 = {}, 
                         _getLogger$info$track5.state_name = "smart_button", _getLogger$info$track5.transition_name = "qr_process_pay_with_" + selectedFundingSource, 
                         _getLogger$info$track5)).flush();
                         return promise_ZalgoPromise.try((function() {
                             var paymentInfo = _extends({}, payment, {
+                                win: win,
                                 fundingSource: selectedFundingSource
                             });
-                            var instance = checkout.init({
+                            return checkout.init({
                                 props: props,
                                 components: components,
                                 payment: paymentInfo,
                                 config: config,
                                 serviceData: serviceData
-                            });
-                            clean.register((function() {
-                                return instance.close();
-                            }));
-                            return instance.start().then((function() {
+                            }).start().then((function() {
                                 return promise_ZalgoPromise.resolve();
                             }));
                         }));
@@ -9004,7 +9003,7 @@ window.spb = function(modules) {
                 logger.addTrackingBuilder((function() {
                     var _ref3;
                     return (_ref3 = {}).state_name = "smart_button", _ref3.context_type = "button_session_id", 
-                    _ref3.context_id = buttonSessionID, _ref3.button_session_id = buttonSessionID, _ref3.button_version = "5.0.61", 
+                    _ref3.context_id = buttonSessionID, _ref3.button_session_id = buttonSessionID, _ref3.button_version = "5.0.68", 
                     _ref3.button_correlation_id = buttonCorrelationID, _ref3.stickiness_id = isAndroidChrome() ? stickinessID : null, 
                     _ref3.bn_code = partnerAttributionID, _ref3.user_action = commit ? "commit" : "continue", 
                     _ref3.seller_id = merchantID[0], _ref3.merchant_domain = merchantDomain, _ref3.t = Date.now().toString(), 

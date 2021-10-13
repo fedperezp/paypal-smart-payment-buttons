@@ -8,9 +8,10 @@ import { values, destroyElement, noop, uniqueID, parseQuery, once } from 'belter
 import { FUNDING } from '@paypal/sdk-constants';
 import { INTENT, CURRENCY, CARD, PLATFORM, COUNTRY, type FundingEligibilityType } from '@paypal/sdk-constants/src';
 import { isWindowClosed, type CrossDomainWindowType } from 'cross-domain-utils/src';
+import { ProxyWindow } from 'post-robot/src/serialize/window';
 
 import type { ZoidComponentInstance, MenuFlowProps } from '../../src/types';
-import { setupButton } from '../../src';
+import { setupButton, setupCard, submitCardFields } from '../../src';
 import { loadFirebaseSDK, clearLsatState } from '../../src/api';
 
 import { triggerKeyPress } from './util';
@@ -101,6 +102,10 @@ export function setupMocks() {
                     });
                 },
                 close: () => {
+                    if (props.window) {
+                        props.window.close();
+                    }
+
                     return ZalgoPromise.delay(50).then(() => {
                         if (props.onClose) {
                             return props.onClose();
@@ -133,8 +138,6 @@ export function setupMocks() {
             };
         },
         CardForm: (props) => {
-            props.onAuth = once(props.onAuth);
-
             return {
                 render: () => {
                     props.onAuth({ accessToken: MOCK_BUYER_ACCESS_TOKEN });
@@ -160,10 +163,35 @@ export function setupMocks() {
                 }
             };
         },
+        CardFields: (props) => {
+            return {
+                render: () => {
+                    return props.createOrder().then(orderID => {
+                        return ZalgoPromise.delay(50).then(() => {
+                            return props.onApprove({
+                                orderID,
+                                payerID: 'AAABBBCCC'
+                            }).catch(err => {
+                                return props.onError(err);
+                            });
+                        });
+                    });
+                },
+                submit: () => {
+                    return submitCardFields({ facilitatorAccessToken: 'ABCDEF12345' });
+                }
+            };
+        },
         postRobot: {
-            on:   () => ({ cancel: noop }),
-            once: () => cancelablePromise(ZalgoPromise.resolve()),
-            send: () => cancelablePromise(ZalgoPromise.resolve())
+            on:                () => ({ cancel: noop }),
+            once:              () => cancelablePromise(ZalgoPromise.resolve()),
+            send:              () => cancelablePromise(ZalgoPromise.resolve()),
+            toProxyWindow: (win : CrossDomainWindowType) =>
+                ProxyWindow.toProxyWindow(win, {
+                    send: () => {
+                        throw new Error(`Can not send post message for proxy window in test`);
+                    }
+                })
         }
     };
 
@@ -189,6 +217,8 @@ export function setupMocks() {
         onInit:    mockAsyncProp(noop),
         onApprove: mockAsyncProp(noop),
         onCancel:  mockAsyncProp(noop),
+        onChange:  mockAsyncProp(noop),
+        export:    mockAsyncProp(noop),
         onError:   mockAsyncProp((err) => {
             throw err;
         }),
@@ -226,6 +256,11 @@ export function setupMocks() {
     cardContainer.id = 'card-fields-container';
     destroyElement(cardContainer);
     body.appendChild(cardContainer);
+
+    const singleCardFieldContainer = document.querySelector('#card-fields-container') || document.createElement('div');
+    singleCardFieldContainer.id = 'card-fields-container';
+    destroyElement(singleCardFieldContainer);
+    body.appendChild(singleCardFieldContainer);
 }
 
 setupMocks();
@@ -341,6 +376,22 @@ export function createButtonHTML({ fundingEligibility = DEFAULT_FUNDING_ELIGIBIL
     }
 
     body.innerHTML += buttons.join('\n');
+}
+
+export function createCardFieldsContainerHTML() : mixed {
+    const fields = [];
+
+    fields.push(`<div id="card-fields-container"></div>`);
+
+    const body = document.body;
+
+    if (!body) {
+        throw new Error('No document.body found');
+    }
+    
+    body.innerHTML += fields.join('\n');
+
+    return document.querySelector('#card-fields-container');
 }
 
 type MockEndpoint = {|
@@ -1496,6 +1547,55 @@ export async function mockSetupButton(overrides? : Object = {}) : Promise<void> 
     });
 }
 
+export async function mockSetupCardFields() : Promise<void> {
+    await setupCard({
+        cspNonce:               '111222333',
+        facilitatorAccessToken: 'ABCDEF12345'
+    });
+}
+
+export function setCardFieldsValues({ number, expiry, cvv } : {| number : string, expiry : string, cvv : string |}) : mixed {
+    const numberInput = document.getElementsByName('number')[0];
+    const expiryInput = document.getElementsByName('expiry')[0];
+    const cvvInput = document.getElementsByName('cvv')[0];
+
+    const inputEvent = new Event('input', { bubbles: true });
+    const pasteEvent = new Event('paste', { bubbles: true });
+    const focusEvent = new Event('focus', { bubbles: true });
+    const blurEvent = new Event('blur', { bubbles: true });
+    const keydownEvent = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true });
+
+
+    if (numberInput) {
+        numberInput.dispatchEvent(focusEvent);
+        // $FlowFixMe
+        numberInput.value = number;
+        numberInput.dispatchEvent(pasteEvent);
+        numberInput.dispatchEvent(inputEvent);
+        numberInput.dispatchEvent(keydownEvent);
+        numberInput.dispatchEvent(blurEvent);
+    }
+
+    if (expiryInput) {
+        expiryInput.dispatchEvent(focusEvent);
+        // $FlowFixMe
+        expiryInput.value = expiry;
+        expiryInput.dispatchEvent(inputEvent);
+        expiryInput.dispatchEvent(keydownEvent);
+        expiryInput.dispatchEvent(blurEvent);
+    }
+
+    if (cvvInput) {
+        cvvInput.dispatchEvent(focusEvent);
+        // $FlowFixMe
+        cvvInput.value = cvv;
+        cvvInput.dispatchEvent(pasteEvent);
+        cvvInput.dispatchEvent(inputEvent);
+        cvvInput.dispatchEvent(keydownEvent);
+        cvvInput.dispatchEvent(blurEvent);
+    }
+}
+
 type PostRobotMock = {|
     receive : <T>({| // eslint-disable-line no-undef
         name : string,
@@ -1510,6 +1610,8 @@ export function getPostRobotMock() : PostRobotMock {
     let active = true;
 
     const listeners = [];
+
+    const originalPostRobot = window.paypal.postRobot;
 
     window.paypal.postRobot = {
         on: (name, options, handler) => {
@@ -1533,6 +1635,13 @@ export function getPostRobotMock() : PostRobotMock {
         },
         send: () => {
             throw new Error(`postRobot.send: not implemented`);
+        },
+        toProxyWindow: (win : CrossDomainWindowType) => {
+            return ProxyWindow.toProxyWindow(win, {
+                send: () => {
+                    throw new Error(`Can not send post message for proxy window in test`);
+                }
+            });
         }
     };
 
@@ -1577,7 +1686,7 @@ export function getPostRobotMock() : PostRobotMock {
 
     const done = () => {
         active = false;
-        delete window.paypal.postRobot;
+        window.paypal.postRobot = originalPostRobot;
     };
 
     return {
@@ -1608,10 +1717,12 @@ type MockWindowOptions = {|
 
 type MockWindow = {|
     getWindow : () => ?CrossDomainWindowType,
+    getOpts : () => {| [string] : string |},
     send : ({| name : string, data? : mixed |}) => ZalgoPromise<Object>,
     redirect : (url : string) => ZalgoPromise<void>,
     close : () => void,
     expectClose : () => void,
+    reset : () => void,
     done : () => void
 |};
 
@@ -1626,9 +1737,39 @@ export function getMockWindowOpen({ expectedUrl, times = 1, appSwitch = false, e
     const postRobotMock = getPostRobotMock();
 
     let win : ?CrossDomainWindowType;
+    let winOpts : ?{| [string] : string |};
+    
+
+    const _onLoad = (url) => {
+        if (!win) {
+            throw new Error(`Expected win to be set`);
+        }
+
+        const [ stringUrl, stringQuery ] = url.split('?');
+
+        if (expectedUrl && stringUrl !== expectedUrl) {
+            throw new Error(`Expected url to be ${ expectedUrl }, got ${ stringUrl }`);
+        }
+
+        const query = parseQuery(stringQuery);
+
+        for (const key of expectedQuery) {
+            if (!query[key]) {
+                throw new Error(`Expected query param: ${ key }`);
+            }
+        }
+
+        onOpen({
+            win,
+            url,
+            query
+        });
+    };
+
+    let onLoad = once(_onLoad);
 
     const windowOpen = window.open;
-    window.open = (url) : CrossDomainWindowType => {
+    window.open = (url, name, opts) : CrossDomainWindowType => {
         if (expectImmediateUrl && !url) {
             throw new Error(`Expected url to be immediately passed to window.open`);
         }
@@ -1639,33 +1780,13 @@ export function getMockWindowOpen({ expectedUrl, times = 1, appSwitch = false, e
             window.open = windowOpen;
         }
 
+        winOpts = opts
+            ? Object.fromEntries(opts.split(',').map(pair => pair.split('=')))
+            : {};
+
         let currentUrl = 'about:blank';
 
-        const onLoad = once(() => {
-            if (!win) {
-                throw new Error(`Expected win to be set`);
-            }
-
-            const [ stringUrl, stringQuery ] = currentUrl.split('?');
-
-            if (expectedUrl && stringUrl !== expectedUrl) {
-                throw new Error(`Expected url to be ${ expectedUrl }, got ${ stringUrl }`);
-            }
-
-            const query = parseQuery(stringQuery);
-
-            for (const key of expectedQuery) {
-                if (!query[key]) {
-                    throw new Error(`Expected query param: ${ key }`);
-                }
-            }
-
-            onOpen({
-                win,
-                url: currentUrl,
-                query
-            });
-        });
+        onLoad = once(_onLoad);
 
         const newWin : CrossDomainWindowType = {
             // $FlowFixMe
@@ -1675,7 +1796,7 @@ export function getMockWindowOpen({ expectedUrl, times = 1, appSwitch = false, e
             set location(loc : string) {
                 ZalgoPromise.delay(5).then(() => {
                     currentUrl = loc;
-                    onLoad();
+                    onLoad(currentUrl);
                 });
             },
             closed: false,
@@ -1729,7 +1850,7 @@ export function getMockWindowOpen({ expectedUrl, times = 1, appSwitch = false, e
                 newWin.closed = true;
             }
 
-            if (url) {
+            if (url && url !== 'about:blank') {
                 newWin.location = url;
             }
         });
@@ -1808,13 +1929,27 @@ export function getMockWindowOpen({ expectedUrl, times = 1, appSwitch = false, e
         expectClose = true;
     };
 
+    const reset = () => {
+        onLoad = once(_onLoad);
+    };
+
+    const getOpts = () => {
+        if (!winOpts) {
+            throw new Error(`Window options not get set`);
+        }
+
+        return winOpts;
+    };
+
     return {
         getWindow,
+        getOpts,
         send,
         redirect,
         close,
         expectClose: doExpectClose,
-        done
+        done,
+        reset
     };
 }
 

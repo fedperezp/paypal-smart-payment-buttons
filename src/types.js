@@ -3,16 +3,14 @@
 import type { CrossDomainWindowType } from 'cross-domain-utils/src';
 import type { ZalgoPromise } from 'zalgo-promise/src';
 import { COUNTRY, LANG, CARD, WALLET_INSTRUMENT, FUNDING } from '@paypal/sdk-constants/src';
+import type { ProxyWindow as _ProxyWindow } from 'post-robot/src';
 
 import { CONTEXT, QRCODE_STATE } from './constants';
 
 // export something to force webpack to see this as an ES module
 export const TYPES = true;
 
-export type ProxyWindow = {|
-    close : () => ZalgoPromise<void>,
-    setLocation : (string) => ZalgoPromise<void>
-|};
+export type ProxyWindow = _ProxyWindow;
 
 export type LocaleType = {|
     country : $Values<typeof COUNTRY>,
@@ -62,7 +60,12 @@ export type CheckoutProps = {|
     enableFunding : ?$ReadOnlyArray<FundingType>,
     standaloneFundingSource : ?FundingType,
     amplitude? : boolean,
-    branded : boolean | null
+    branded : boolean | null,
+    restart : () => ZalgoPromise<void>,
+    dimensions : {|
+        width : number,
+        height : number
+    |}
 |};
 
 export type CheckoutFlowType = ZoidComponent<CheckoutProps>;
@@ -128,7 +131,7 @@ export type QRCodeProps = {|
     state? : $Values<typeof QRCODE_STATE>,
     errorText? : string,
     onClose? : () => ZalgoPromise<void>,
-    onEscapePath? : (selectedFundingSource : $Values<typeof FUNDING>) => ZalgoPromise<void>
+    onEscapePath? : (win : CrossDomainWindowType, selectedFundingSource : $Values<typeof FUNDING>) => ZalgoPromise<void>
 |};
 export type QRCodeType = ZoidComponent<QRCodeProps>;
 
