@@ -51,7 +51,8 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
 
             const client = await getSmartQRCodeClientScript({ debug, logBuffer, cache, useLocal, locationInformation });
 
-            const experiment = await getQRCodeExperiment(req, { buttonSessionID });
+            const getQrCodeResult = await getQRCodeExperiment(req, { buttonSessionID });
+            const experiment = getQRVariant(getQrCodeResult);
 
             logger.info(req, `qrcode_client_version_${ client.version }`);
             logger.info(req, `qrcode_params`, { params: JSON.stringify(params) });
@@ -69,7 +70,7 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
                 ${ meta.getSDKLoader({ nonce: cspNonce }) }
                 <script nonce="${ cspNonce }">${ client.script }</script>
                 <script nonce="${ cspNonce }">
-                    spbQRCode.renderQRCode(${ safeJSON({ svgString, variant: getQRVariant(experiment) }) });
+                    spbQRCode.renderQRCode(${ safeJSON({ svgString, experiment }) });
                 </script>
             </body>
         `;

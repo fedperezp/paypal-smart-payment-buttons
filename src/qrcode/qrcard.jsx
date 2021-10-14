@@ -46,10 +46,10 @@ function useXProps<T>() : T {
 
 function QRCard({
     svgString,
-    variant
+    experiment
 } : {|
     svgString : string,
-    variant? : string
+    experiment : string
 |}) : mixed {
 
     const { state, errorText, setState, close } = useXProps();
@@ -113,14 +113,14 @@ function QRCard({
 
     const content = displaySurvey ? surveyElement : frontView;
     const escapePathFooter = !survey.isEnabled && (
-        <p className={ `escape-path escape-path--${ variant }` }>Don&apos;t have the app? Pay with <span className="escape-path__link" onClick={ () => handleClick(FUNDING.PAYPAL) }>PayPal</span> or <span className="escape-path__link" onClick={ () => handleClick(FUNDING.CARD) }>Credit/Debit card</span></p>
+        <p className={ `escape-path escape-path--${ experiment }` }>Don&apos;t have the app? Pay with <span className="escape-path__link" onClick={ () => handleClick(FUNDING.PAYPAL) }>PayPal</span> or <span className="escape-path__link" onClick={ () => handleClick(FUNDING.CARD) }>Credit/Debit card</span></p>
     );
 
     return (
         <Fragment>
             <style nonce={ window.xprops.cspNonce }> { cardStyle } </style>
             <a href="#" id="close" aria-label="close" role="button" onClick={ onCloseClick } />
-            <div id="view-boxes" className={ state }>
+            <div id="view-boxes" className={ `${ state } ${ experiment }` }>
                 { isError() ? errorMessage : content }
                 <div className="card" id="back-view" >
                     <span className="mark">
@@ -152,18 +152,18 @@ function QRCard({
 
 type RenderQRCodeOptions = {|
     svgString : string,
-    variant : string
+    experiment : string
 |};
 
 export function renderQRCode({
     svgString,
-    variant
+    experiment
 } : RenderQRCodeOptions) {
     logger = setupNativeQRLogger();
     render(
         <QRCard
             svgString={ svgString }
-            variant={ variant }
+            experiment={ experiment }
         />,
         getBody()
     );
