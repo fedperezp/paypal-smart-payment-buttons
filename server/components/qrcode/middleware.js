@@ -10,7 +10,7 @@ import { getSmartQRCodeClientScript } from './script';
 import { QRCode } from './node-qrcode';
 
 type QRCodeElmoParam = {|
-    clientID : string
+    buttonSessionID : string
 |};
 
 type QRcodeMiddlewareOptions = {|

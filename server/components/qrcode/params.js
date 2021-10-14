@@ -13,7 +13,7 @@ type ParamsType = {|
     demo? : boolean,
     locale? : LocaleType,
     debug? : boolean,
-    clientID : string
+    buttonSessionID : string
 |};
 
 type RequestParams = {|
@@ -23,7 +23,7 @@ type RequestParams = {|
     demo : boolean,
     locale : LocaleType,
     debug : boolean,
-    clientID : string
+    buttonSessionID : string
 |};
 
 export function getQRVariant(experiment : $Values<typeof VENMO_DESKTOP_EXP>) : string {
@@ -37,7 +37,7 @@ export function getParams(params : ParamsType, req : ExpressRequest, res : Expre
         demo,
         locale = {},
         debug = false,
-        clientID
+        buttonSessionID
     } = params;
 
     const {
@@ -54,6 +54,6 @@ export function getParams(params : ParamsType, req : ExpressRequest, res : Expre
         demo:   Boolean(demo),
         debug:  Boolean(debug),
         locale: { country, lang },
-        clientID
+        buttonSessionID
     };
 }
