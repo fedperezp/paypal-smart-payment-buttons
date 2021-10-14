@@ -69,12 +69,7 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
                 ${ meta.getSDKLoader({ nonce: cspNonce }) }
                 <script nonce="${ cspNonce }">${ client.script }</script>
                 <script nonce="${ cspNonce }">
-    spbQRCode.renderQRCode(${ safeJSON({
-        cspNonce,
-        svgString,
-        debug,
-        variant: getQRVariant(experiment)
-    }) })
+                    spbQRCode.renderQRCode(${ safeJSON({ svgString, variant: getQRVariant(experiment) }) });
                 </script>
             </body>
         `;
