@@ -51,7 +51,7 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
 
             const client = await getSmartQRCodeClientScript({ debug, logBuffer, cache, useLocal, locationInformation });
 
-            const experiment = await getQRCodeExperiment(req, { clientID });
+            const experiment = await getQRCodeExperiment(req, { buttonSessionID });
 
             logger.info(req, `qrcode_client_version_${ client.version }`);
             logger.info(req, `qrcode_params`, { params: JSON.stringify(params) });
