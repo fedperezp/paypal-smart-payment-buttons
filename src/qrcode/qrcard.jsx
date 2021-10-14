@@ -156,11 +156,6 @@ type RenderQRCodeOptions = {|
 |};
 
 export function renderQRCode({
-    svgString : string,
-    variant = ''
-|};
-
-export function renderQRCode({
     svgString,
     variant
 } : RenderQRCodeOptions) {

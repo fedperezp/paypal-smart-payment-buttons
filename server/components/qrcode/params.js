@@ -1,7 +1,5 @@
 /* @flow */
 
-import url from 'url';
-
 import { ENV, DEFAULT_COUNTRY, COUNTRY_LANGS } from '@paypal/sdk-constants';
 
 import type { ExpressRequest, ExpressResponse, LocaleType } from '../../types';
