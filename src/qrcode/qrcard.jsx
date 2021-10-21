@@ -96,6 +96,9 @@ function QRCard({
                     To pay, scan the QR code with <br />your Venmo app
                 </span>
             </div>
+            <p id="fee-disclaimer">
+                Venmo checkout is fast &amp; free. You pay no fee <br /> regardless of the instrument you choose.
+            </p>
             <QRCodeElement svgString={ svgString } />
             <Logo />
         </div>

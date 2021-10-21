@@ -206,6 +206,13 @@ export const cardStyle : string = `
         min-height: 46px;
         margin-right: 16px;
     }
+    #fee-disclaimer{
+        margin: 0;
+        color: rgba(0,0,0,0.6);
+        padding-left: 16px;
+        padding-right: 16px;
+        font-size: 14px;
+    }
     #back-view {
         position: absolute;
         transform: rotateY(-180deg);
