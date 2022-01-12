@@ -2403,7 +2403,7 @@
             }), children));
         }
         function callGraphQL(_ref5) {
-            var name = _ref5.name, _ref5$variables = _ref5.variables, _ref5$headers = _ref5.headers;
+            var name = _ref5.name, _ref5$variables = _ref5.variables, _ref5$headers = _ref5.headers, _ref5$returnErrorObje = _ref5.returnErrorObject, returnErrorObject = void 0 !== _ref5$returnErrorObje && _ref5$returnErrorObje;
             return request({
                 url: "/graphql?" + name,
                 method: "POST",
@@ -2422,6 +2422,7 @@
                     getLogger().warn("graphql_" + name + "_error", {
                         err: message
                     });
+                    if (returnErrorObject) throw errors[0];
                     throw new Error(message);
                 }
                 if (200 !== status) {
@@ -3284,7 +3285,7 @@
                         }));
                     }
                 });
-            }(), state = _useXProps.state, errorText = _useXProps.errorText, setState = _useXProps.setState, close = _useXProps.close;
+            }(), state = _useXProps.state, errorText = _useXProps.errorText, setState = _useXProps.setState, close = _useXProps.close, cancel = _useXProps.onCancel;
             var survey = function() {
                 var _useState = hooks_module_l({
                     isEnabled: !1,
@@ -3377,15 +3378,15 @@
                 }));
             };
             var onCloseClick = function() {
-                if ("qr_default" !== state) close(); else if (survey.isEnabled) {
+                if ("qr_default" !== state) cancel(); else if (survey.isEnabled) {
                     var _logger$info$track;
                     qrcard_logger.info("VenmoDesktopPay_qrcode_survey").track((_logger$info$track = {}, 
                     _logger$info$track.state_name = "smart_button", _logger$info$track.context_type = "EC-Token", 
                     _logger$info$track.context_id = window.xprops.orderID, _logger$info$track.transition_name = "desktop_exit_survey_selection_submitted", 
                     _logger$info$track.desktop_exit_survey_reason = survey.reason, _logger$info$track)).flush();
-                    close();
+                    cancel();
                 }
-                return close();
+                return cancel();
             };
             var errorMessage = v(ErrorMessage, {
                 message: errorText,

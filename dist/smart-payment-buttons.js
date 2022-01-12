@@ -104,7 +104,7 @@ window.spb = function(modules) {
         }([ function(E, N, S) {
             "use strict";
             S.r(N), S.d(N, "DEFAULT_COUNTRY", (function() {
-                return C;
+                return a;
             })), S.d(N, "DEFAULT_CURRENCY", (function() {
                 return a;
             })), S.d(N, "DEFAULT_INTENT", (function() {
@@ -116,9 +116,9 @@ window.spb = function(modules) {
             })), S.d(N, "DEFAULT_NONSALE_COMMIT", (function() {
                 return P;
             })), S.d(N, "DEFAULT_VAULT", (function() {
-                return c;
-            })), S.d(N, "DEFAULT_COMPONENTS", (function() {
                 return U;
+            })), S.d(N, "DEFAULT_COMPONENTS", (function() {
+                return c;
             })), S.d(N, "DEFAULT_DEBUG", (function() {
                 return G;
             })), S.d(N, "ENV", (function() {
@@ -6973,7 +6973,7 @@ window.spb = function(modules) {
             }));
         }
         function callGraphQL(_ref5) {
-            var name = _ref5.name, _ref5$variables = _ref5.variables, _ref5$headers = _ref5.headers;
+            var name = _ref5.name, _ref5$variables = _ref5.variables, _ref5$headers = _ref5.headers, _ref5$returnErrorObje = _ref5.returnErrorObject, returnErrorObject = void 0 !== _ref5$returnErrorObje && _ref5$returnErrorObje;
             return request({
                 url: "/graphql?" + name,
                 method: "POST",
@@ -6992,6 +6992,7 @@ window.spb = function(modules) {
                     logger_getLogger().warn("graphql_" + name + "_error", {
                         err: message
                     });
+                    if (returnErrorObject) throw errors[0];
                     throw new Error(message);
                 }
                 if (200 !== status) {
@@ -9737,7 +9738,24 @@ window.spb = function(modules) {
         };
         var sdk_constants = __webpack_require__("./node_modules/@paypal/sdk-constants/index.js");
         var dist = __webpack_require__("./node_modules/credit-card-type/dist/index.js");
+        var dist_default = __webpack_require__.n(dist);
         var _CARD_FIELD_TYPE_TO_F, _VALIDATOR_TO_TYPE_MA;
+        var GQL_ERRORS = {
+            "/payment_source/card/number": {
+                VALIDATION_ERROR: "INVALID_NUMBER",
+                MISSING_REQUIRED_PARAMETER: "MISSING_NUMBER"
+            },
+            "/payment_source/card/expiry": {
+                INVALID_PARAMETER_SYNTAX: "INVALID_EXPIRATION_DATE_FORMAT",
+                INVALID_STRING_LENGTH: "INVALID_EXPIRATION_DATE_LENGTH",
+                CARD_EXPIRED: "CARD_EXPIRED",
+                MISSING_REQUIRED_PARAMETER: "MISSING_EXPIRATION_DATE"
+            },
+            "/payment_source/card/security_code": {
+                VALIDATION_ERROR: "INVALID_SECURITY_CODE"
+            },
+            TRANSACTION_REFUSED: "TRANSACTION_REJECTED"
+        };
         (_CARD_FIELD_TYPE_TO_F = {}).single = "card-field", _CARD_FIELD_TYPE_TO_F.number = "card-number-field", 
         _CARD_FIELD_TYPE_TO_F.cvv = "card-cvv-field", _CARD_FIELD_TYPE_TO_F.expiry = "card-expiry-field";
         (_VALIDATOR_TO_TYPE_MA = {})[dist.types.AMERICAN_EXPRESS] = "AMEX", _VALIDATOR_TO_TYPE_MA[dist.types.DINERS_CLUB] = "DINERS", 
@@ -9748,6 +9766,53 @@ window.spb = function(modules) {
         _VALIDATOR_TO_TYPE_MA[dist.types.VISA] = "VISA", _VALIDATOR_TO_TYPE_MA["cb-nationale"] = "CB_NATIONALE", 
         _VALIDATOR_TO_TYPE_MA.cetelem = "CETELEM", _VALIDATOR_TO_TYPE_MA.cofidis = "COFIDIS", 
         _VALIDATOR_TO_TYPE_MA.cofinoga = "COFINOGA";
+        __webpack_require__("./node_modules/belter/index.js");
+        __webpack_require__("./node_modules/card-validator/src/luhn-10.js");
+        __webpack_require__("./node_modules/card-validator/dist/index.js");
+        dist_default.a.addCard({
+            code: {
+                name: "CVV",
+                size: 3
+            },
+            gaps: [ 4, 8, 12 ],
+            lengths: [ 16, 18, 19 ],
+            niceType: "Carte Bancaire",
+            patterns: [],
+            type: "cb-nationale"
+        });
+        dist_default.a.addCard({
+            code: {
+                name: "CVV",
+                size: 3
+            },
+            gaps: [ 4, 8, 12, 16 ],
+            lengths: [ 19 ],
+            niceType: "Carte Aurore",
+            patterns: [],
+            type: "cetelem"
+        });
+        dist_default.a.addCard({
+            code: {
+                name: "",
+                size: 0
+            },
+            gaps: [ 4, 8, 12, 16 ],
+            lengths: [ 17 ],
+            niceType: "Cofinoga ou Privilège",
+            patterns: [],
+            type: "cofinoga"
+        });
+        dist_default.a.addCard({
+            code: {
+                name: "",
+                size: 0
+            },
+            gaps: [ 4, 8 ],
+            lengths: [ 8, 9 ],
+            niceType: "4 étoiles",
+            patterns: [],
+            type: "cofidis"
+        });
         function getExportsByFrameName(name) {
             try {
                 for (var _i2 = 0, _getAllFramesInWindow2 = getAllFramesInWindow(window); _i2 < _getAllFramesInWindow2.length; _i2++) {
@@ -9756,24 +9821,28 @@ window.spb = function(modules) {
                 }
             } catch (err) {}
         }
+        function getCardFrames() {
+            return {
+                cardFrame: getExportsByFrameName("card-field"),
+                cardNumberFrame: getExportsByFrameName("card-number-field"),
+                cardCVVFrame: getExportsByFrameName("card-cvv-field"),
+                cardExpiryFrame: getExportsByFrameName("card-expiry-field")
+            };
+        }
         function hasCardFields() {
-            if (getExportsByFrameName("card-field")) return !0;
-            var cardNumberFrame = getExportsByFrameName("card-number-field");
-            var cardCVVFrame = getExportsByFrameName("card-cvv-field");
-            var cardExpiryFrame = getExportsByFrameName("card-expiry-field");
-            return !!(cardNumberFrame && cardCVVFrame && cardExpiryFrame);
+            var _getCardFrames = getCardFrames();
+            return !!(_getCardFrames.cardFrame || _getCardFrames.cardNumberFrame && _getCardFrames.cardCVVFrame && _getCardFrames.cardExpiryFrame);
         }
         function getCardFields() {
             var cardFrame = getExportsByFrameName("card-field");
-            if (cardFrame) return cardFrame.getFieldValue();
-            var cardNumberFrame = getExportsByFrameName("card-number-field");
-            var cardCVVFrame = getExportsByFrameName("card-cvv-field");
-            var cardExpiryFrame = getExportsByFrameName("card-expiry-field");
-            return cardNumberFrame && cardNumberFrame.isFieldValid() && cardCVVFrame && cardCVVFrame.isFieldValid() && cardExpiryFrame && cardExpiryFrame.isFieldValid() ? {
+            if (cardFrame && cardFrame.isFieldValid()) return cardFrame.getFieldValue();
+            var _getCardFrames2 = getCardFrames(), cardNumberFrame = _getCardFrames2.cardNumberFrame, cardCVVFrame = _getCardFrames2.cardCVVFrame, cardExpiryFrame = _getCardFrames2.cardExpiryFrame;
+            if (cardNumberFrame && cardNumberFrame.isFieldValid() && cardCVVFrame && cardCVVFrame.isFieldValid() && cardExpiryFrame && cardExpiryFrame.isFieldValid()) return {
                 number: cardNumberFrame.getFieldValue(),
                 cvv: cardCVVFrame.getFieldValue(),
                 expiry: cardExpiryFrame.getFieldValue()
-            } : void 0;
+            };
+            throw new Error("Card fields not available to submit");
         }
         var cardField = {
             name: "card_field",
@@ -9793,93 +9862,170 @@ window.spb = function(modules) {
                         if (!getCardFields()) return !1;
                     },
                     start: function() {
-                        return _getCardProps = function(_ref) {
-                            var _fundingEligibility$c, _fundingEligibility$c2;
-                            var facilitatorAccessToken = _ref.facilitatorAccessToken;
-                            var xprops = window.xprops;
-                            var type = xprops.type, cardSessionID = xprops.cardSessionID, style = xprops.style, placeholder = xprops.placeholder, fundingEligibility = xprops.fundingEligibility, onChange = xprops.onChange, _xprops$branded = xprops.branded, branded = void 0 === _xprops$branded ? null == (_fundingEligibility$c = null == fundingEligibility || null == (_fundingEligibility$c2 = fundingEligibility.card) ? void 0 : _fundingEligibility$c2.branded) || _fundingEligibility$c : _xprops$branded, parent = xprops.parent, xport = xprops.export;
-                            return _extends({}, getProps({
-                                facilitatorAccessToken: facilitatorAccessToken,
-                                branded: branded
-                            }), {
-                                type: type,
-                                branded: branded,
-                                style: style,
-                                placeholder: placeholder,
-                                cardSessionID: cardSessionID,
-                                fundingEligibility: fundingEligibility,
-                                onChange: onChange,
-                                export: parent ? parent.export : xport,
-                                facilitatorAccessToken: facilitatorAccessToken
-                            });
+                        return function(_ref) {
+                            var _getCardProps = function(_ref) {
+                                var _fundingEligibility$c, _fundingEligibility$c2;
+                                var facilitatorAccessToken = _ref.facilitatorAccessToken;
+                                var xprops = window.xprops;
+                                var type = xprops.type, cardSessionID = xprops.cardSessionID, style = xprops.style, placeholder = xprops.placeholder, fundingEligibility = xprops.fundingEligibility, onChange = xprops.onChange, _xprops$branded = xprops.branded, branded = void 0 === _xprops$branded ? null == (_fundingEligibility$c = null == fundingEligibility || null == (_fundingEligibility$c2 = fundingEligibility.card) ? void 0 : _fundingEligibility$c2.branded) || _fundingEligibility$c : _xprops$branded, parent = xprops.parent, xport = xprops.export;
+                                return _extends({}, getProps({
+                                    facilitatorAccessToken: facilitatorAccessToken,
+                                    branded: branded
+                                }), {
+                                    type: type,
+                                    branded: branded,
+                                    style: style,
+                                    placeholder: placeholder,
+                                    cardSessionID: cardSessionID,
+                                    fundingEligibility: fundingEligibility,
+                                    onChange: onChange,
+                                    export: parent ? parent.export : xport,
+                                    facilitatorAccessToken: facilitatorAccessToken
+                                });
+                            }({
+                                facilitatorAccessToken: _ref.facilitatorAccessToken
+                            }), intent = _getCardProps.intent, branded = _getCardProps.branded, vault = _getCardProps.vault, createOrder = _getCardProps.createOrder, onApprove = _getCardProps.onApprove, clientID = _getCardProps.clientID;
+                            !function() {
+                                var _getCardFrames4 = getCardFrames(), cardFrame = _getCardFrames4.cardFrame, cardNumberFrame = _getCardFrames4.cardNumberFrame, cardExpiryFrame = _getCardFrames4.cardExpiryFrame, cardCVVFrame = _getCardFrames4.cardCVVFrame;
+                                cardFrame && cardFrame.resetGQLErrors();
+                                cardNumberFrame && cardNumberFrame.resetGQLErrors();
+                                cardExpiryFrame && cardExpiryFrame.resetGQLErrors();
+                                cardCVVFrame && cardCVVFrame.resetGQLErrors();
+                            }();
+                            return promise_ZalgoPromise.try((function() {
+                                if (!hasCardFields()) throw new Error("Card fields not available to submit");
+                                var card = getCardFields();
+                                if (card) {
+                                    var restart = function() {
+                                        throw new Error("Restart not implemented for card fields flow");
+                                    };
+                                    return intent === sdk_constants.INTENT.TOKENIZE ? function(_ref25) {
+                                        var card = _ref25.card;
+                                        return promise_ZalgoPromise.try((function() {
+                                            console.info("Card Tokenize GQL mutation not yet implemented", {
+                                                card: card
+                                            });
+                                            return {
+                                                paymentMethodToken: uniqueID()
+                                            };
+                                        }));
+                                    }({
+                                        card: card
+                                    }).then((function(_ref2) {
+                                        return onApprove({
+                                            paymentMethodToken: _ref2.paymentMethodToken
+                                        }, {
+                                            restart: restart
+                                        });
+                                    })) : intent === sdk_constants.INTENT.CAPTURE || intent === sdk_constants.INTENT.AUTHORIZE ? createOrder().then((function(orderID) {
+                                        return (_ref26 = {
+                                            card: {
+                                                cardNumber: card.number,
+                                                expirationDate: card.expiry,
+                                                securityCode: card.cvv
+                                            },
+                                            orderID: orderID,
+                                            vault: vault,
+                                            branded: branded,
+                                            clientID: clientID
+                                        }, callGraphQL({
+                                            name: "ProcessPayment",
+                                            query: '\n            mutation ProcessPayment(\n                $orderID: String!\n                $clientID: String!\n                $card: CardInput!\n                $branded: Boolean!\n            ) {\n                processPayment(\n                    clientID: $clientID\n                    paymentMethod: { type: CARD, card: $card }\n                    branded: $branded\n                    orderID: $orderID\n                    buttonSessionID: "f7r7367r4"\n                )\n            }\n        ',
+                                            variables: {
+                                                orderID: _ref26.orderID,
+                                                clientID: _ref26.clientID,
+                                                card: _ref26.card,
+                                                branded: _ref26.branded
+                                            },
+                                            returnErrorObject: !0
+                                        }).then((function(gqlResult) {
+                                            if (!gqlResult) throw new Error("Error on GraphQL ProcessPayment mutation");
+                                            return gqlResult;
+                                        }))).catch((function(error) {
+                                            var _parseGQLErrors = function(errorsObject) {
+                                                var data = errorsObject.data;
+                                                var parsedErrors = [];
+                                                var errors = [];
+                                                var errorsMap = {};
+                                                Array.isArray(data) && data.length && data.forEach((function(e) {
+                                                    var details = e.details;
+                                                    Array.isArray(details) && details.length && details.forEach((function(d) {
+                                                        errors.push(d);
+                                                        var parsedError;
+                                                        if (d.field && d.issue && d.description) {
+                                                            var _GQL_ERRORS$d$field$d;
+                                                            parsedError = null != (_GQL_ERRORS$d$field$d = GQL_ERRORS[d.field][d.issue]) ? _GQL_ERRORS$d$field$d : d.issue + ": " + d.description;
+                                                            var field = d.field.split("/").pop();
+                                                            errorsMap[field] || (errorsMap[field] = []);
+                                                            errorsMap[field].push(parsedError);
+                                                        } else if (d.issue && d.description) {
+                                                            var _GQL_ERRORS$d$issue;
+                                                            parsedError = null != (_GQL_ERRORS$d$issue = GQL_ERRORS[d.issue]) ? _GQL_ERRORS$d$issue : d.issue + ": " + d.description;
+                                                        }
+                                                        parsedError && parsedErrors.push(parsedError);
+                                                    }));
+                                                }));
+                                                return {
+                                                    errors: errors,
+                                                    parsedErrors: parsedErrors,
+                                                    errorsMap: errorsMap
+                                                };
+                                            }(error), errorsMap = _parseGQLErrors.errorsMap, parsedErrors = _parseGQLErrors.parsedErrors, errors = _parseGQLErrors.errors;
+                                            errorsMap && function(errorsMap) {
+                                                var _getCardFrames3 = getCardFrames(), cardFrame = _getCardFrames3.cardFrame, cardNumberFrame = _getCardFrames3.cardNumberFrame, cardExpiryFrame = _getCardFrames3.cardExpiryFrame, cardCVVFrame = _getCardFrames3.cardCVVFrame;
+                                                var number = errorsMap.number, expiry = errorsMap.expiry, security_code = errorsMap.security_code;
+                                                if (cardFrame) {
+                                                    var cardFieldError = {
+                                                        field: "",
+                                                        errors: []
+                                                    };
+                                                    number && (cardFieldError = {
+                                                        field: "number",
+                                                        errors: number
+                                                    });
+                                                    expiry && (cardFieldError = {
+                                                        field: "expiry",
+                                                        errors: expiry
+                                                    });
+                                                    security_code && (cardFieldError = {
+                                                        field: "cvv",
+                                                        errors: security_code
+                                                    });
+                                                    cardFrame.setGqlErrors(cardFieldError);
+                                                }
+                                                cardNumberFrame && number && cardNumberFrame.setGqlErrors({
+                                                    field: "number",
+                                                    errors: number
+                                                });
+                                                cardExpiryFrame && expiry && cardExpiryFrame.setGqlErrors({
+                                                    field: "expiry",
+                                                    errors: expiry
+                                                });
+                                                cardCVVFrame && security_code && cardCVVFrame.setGqlErrors({
+                                                    field: "cvv",
+                                                    errors: security_code
+                                                });
+                                            }(errorsMap);
+                                            logger_getLogger().info("card_fields_payment_failed");
+                                            throw {
+                                                parsedErrors: parsedErrors,
+                                                errors: errors
+                                            };
+                                        }));
+                                        var _ref26;
+                                    })).then((function() {
+                                        return onApprove({
+                                            payerID: uniqueID(),
+                                            buyerAccessToken: uniqueID()
+                                        }, {
+                                            restart: restart
+                                        });
+                                    })) : void 0;
+                                }
+                            }));
                         }({
                             facilitatorAccessToken: facilitatorAccessToken
-                        }), intent = _getCardProps.intent, branded = _getCardProps.branded, vault = _getCardProps.vault, 
-                        createOrder = _getCardProps.createOrder, onApprove = _getCardProps.onApprove, clientID = _getCardProps.clientID, 
-                        promise_ZalgoPromise.try((function() {
-                            if (!hasCardFields()) throw new Error("Card fields not available to submit");
-                            var card = getCardFields();
-                            if (card) {
-                                var restart = function() {
-                                    throw new Error("Restart not implemented for card fields flow");
-                                };
-                                return intent === sdk_constants.INTENT.TOKENIZE ? function(_ref25) {
-                                    var card = _ref25.card;
-                                    return promise_ZalgoPromise.try((function() {
-                                        console.info("Card Tokenize GQL mutation not yet implemented", {
-                                            card: card
-                                        });
-                                        return {
-                                            paymentMethodToken: uniqueID()
-                                        };
-                                    }));
-                                }({
-                                    card: card
-                                }).then((function(_ref2) {
-                                    return onApprove({
-                                        paymentMethodToken: _ref2.paymentMethodToken
-                                    }, {
-                                        restart: restart
-                                    });
-                                })) : intent === sdk_constants.INTENT.CAPTURE || intent === sdk_constants.INTENT.AUTHORIZE ? createOrder().then((function(orderID) {
-                                    return (_ref26 = {
-                                        card: {
-                                            cardNumber: card.number,
-                                            expirationDate: card.expiry,
-                                            cvv: card.cvv,
-                                            postalCode: "48007"
-                                        },
-                                        orderID: orderID,
-                                        vault: vault,
-                                        branded: branded,
-                                        clientID: clientID
-                                    }, callGraphQL({
-                                        name: "ProcessPayment",
-                                        query: '\n            mutation ProcessPayment(\n                $orderID: String!\n                $clientID: String!\n                $card: CardInput!\n                $branded: Boolean!\n            ) {\n                processPayment(\n                    clientID: $clientID\n                    paymentMethod: { type: CREDIT_CARD, card: $card }\n                    branded: $branded\n                    token: $orderID\n                    buttonSessionID: "f7r7367r4"\n                )\n            }\n        ',
-                                        variables: {
-                                            orderID: _ref26.orderID,
-                                            clientID: _ref26.clientID,
-                                            card: _ref26.card,
-                                            branded: !0
-                                        }
-                                    }).then((function(gqlResult) {
-                                        if (!gqlResult) throw new Error("Error on GraphQL ProcessPayment mutation");
-                                        return gqlResult;
-                                    }))).catch((function(error) {
-                                        logger_getLogger().info("card_fields_payment_failed");
-                                        throw error;
-                                    }));
-                                    var _ref26;
-                                })).then((function() {
-                                    return onApprove({
-                                        payerID: uniqueID()
-                                    }, {
-                                        restart: restart
-                                    });
-                                })) : void 0;
-                            }
-                        }));
-                        var _getCardProps, intent, branded, vault, createOrder, onApprove, clientID;
+                        });
                     },
                     close: promiseNoop
                 };
@@ -11259,12 +11405,21 @@ window.spb = function(modules) {
                                 stickinessID: stickinessID,
                                 pageUrl: pageUrl
                             });
+                            var cancelModal = function() {
+                                return promise_ZalgoPromise.try((function() {
+                                    return onCancel();
+                                })).then((function() {
+                                    qrCodeComponentInstance.close();
+                                    return onDestroy();
+                                }));
+                            };
                             var qrCodeComponentInstance = QRCode({
                                 cspNonce: config.cspNonce,
                                 qrPath: url,
                                 state: "qr_default",
                                 orderID: orderID,
                                 onClose: onQRClose,
+                                onCancel: cancelModal,
                                 onEscapePath: onEscapePath
                             });
                             function updateQRCodeComponentState(newState) {
@@ -11273,6 +11428,7 @@ window.spb = function(modules) {
                                     qrPath: url,
                                     orderID: orderID,
                                     onClose: onQRClose,
+                                    onCancel: cancelModal,
                                     onEscapePath: onEscapePath
                                 }, newState));
                             }
@@ -11307,9 +11463,13 @@ window.spb = function(modules) {
                                     },
                                     onCancel: function() {
                                         return promise_ZalgoPromise.try((function() {
+                                            return onCancel();
+                                        })).then((function() {
                                             return closeQRCode("onCancel");
                                         })).then((function() {
-                                            return onCancel();
+                                            return {
+                                                buttonSessionID: buttonSessionID
+                                            };
                                         }));
                                     },
                                     onError: function(res) {
