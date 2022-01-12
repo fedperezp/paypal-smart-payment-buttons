@@ -4815,7 +4815,6 @@
             if (!window.paypal) throw new Error("paypal not found");
             return window.paypal;
         }
-        var belter = __webpack_require__(0);
         function isAndroidAppInstalled(appId) {
             return window.navigator && window.navigator.getInstalledRelatedApps ? window.navigator.getInstalledRelatedApps().then((function(apps) {
                 if (apps && apps.length) {
@@ -4900,7 +4899,7 @@
                     var _ref2;
                     return (_ref2 = {
                         buttonSessionID: buttonSessionID
-                    }).user_id = buttonSessionID, _ref2.time = Date.now().toString(), _ref2;
+                    }).user_id = buttonSessionID, _ref2;
                 }));
                 logger.addTrackingBuilder((function() {
                     var _ref3;
@@ -4957,7 +4956,7 @@
             _logger$info$track.info_msg = base64encode(window.location.href), _logger$info$track)).flush();
             var appInstalledPromise = function(_ref2) {
                 var fundingSource = _ref2.fundingSource, env = _ref2.env;
-                if (Object(belter.isIos)()) return promise_ZalgoPromise.resolve(null);
+                if (isIOSSafari()) return promise_ZalgoPromise.resolve(null);
                 switch (fundingSource) {
                   case "paypal":
                     return isAndroidAppInstalled("com.paypal.android.p2pmobile").then((function(app) {
