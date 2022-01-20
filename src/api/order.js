@@ -13,8 +13,6 @@ import type { ShippingMethod, ShippingAddress } from '../payment-flows/types';
 
 import { callSmartAPI, callGraphQL, callRestAPI, getResponseCorrelationID, getErrorResponseCorrelationID } from './api';
 import { getLsatUpgradeError, getLsatUpgradeCalled } from './auth';
-import { retriggerFraudnet } from './fraudnet';
-
 
 export type OrderCreateRequest = {|
     intent? : 'CAPTURE' | 'AUTHORIZE',
@@ -347,6 +345,10 @@ const VALIDATE_CONTINGENCIES = {
 export type ValidatePaymentMethodResponse = {|
     links? : $ReadOnlyArray<{|
         rel : string
+    |}>,
+    details? : $ReadOnlyArray<{|
+        issue? : string,
+        description? : string
     |}>
 |};
 
@@ -563,9 +565,6 @@ type OneClickApproveOrderOptions = {|
 |};
 
 export function oneClickApproveOrder({ orderID, instrumentType, instrumentID, buyerAccessToken, clientMetadataID } : OneClickApproveOrderOptions) : ZalgoPromise<ApproveData> {
-    // resend fraudnet data for one click checkout
-    retriggerFraudnet();
-
     return callGraphQL({
         name:  'OneClickApproveOrder',
         query: `
@@ -690,7 +689,7 @@ export type DetailedOrderInfo = {|
                     currencyValue : string,
                     currencyCode : $Values<typeof CURRENCY>
                 |},
-                
+
                 subtotal : {|
                     currencyFormatSymbolISOCurrency : string,
                     currencyValue : string,
