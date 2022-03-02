@@ -47,7 +47,7 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
                     // width:  240,
                     margin: 0,
                     color:  {
-                        dark:  VENMO_BLUE,
+                        dark:  '#008CFF',
                         light: '#FFFFFF'
                     }
                 }
