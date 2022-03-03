@@ -79,7 +79,7 @@ export function DetailedInstructions({ children, showInstructions } : {| childre
 
 export function PaypalIcon() : mixed {
     return (
-        <span>
+        <span id="paypal-icon">
             {PPLogo({ logoColor: LOGO_COLOR.DEFAULT }).render(preact({ Preact: { h } }))}
             {PayPalLogo({ logoColor: LOGO_COLOR.DEFAULT }).render(preact({ Preact: { h } }))}
         </span>
@@ -487,16 +487,18 @@ export const cardStyle : string = `
         cursor: pointer;
     }
     #powered-logo {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        align-items: end;
-        grid-gap: 4px;
+        display: flex;
+        align-items: center;
     }
     #powered-logo span {
         height: 16px;
     }
     #powered-logo img {
         height: 16px;
+    }
+    #powered-logo #paypal-icon {
+        margin-left: 2px;
+        margin-bottom: -1px;
     }
     .detailed-instructions {
         display: grid;
@@ -540,6 +542,8 @@ export const cardStyle : string = `
     }
     .detailed-instructions #qr-code {
         width: 100%;
+        min-height: 350px;
+        min-width: 350px;
     }
     `;
 

@@ -4,7 +4,7 @@ import { clientErrorResponse, htmlResponse, allowFrame, defaultLogger, safeJSON,
     isLocalOrTest, type ExpressMiddleware } from '../../lib';
 import type { LoggerType, CacheType, InstanceLocationInformation, ExpressRequest  } from '../../types';
 
-import { EVENT, VENMO_BLUE, VQRC_EXPERIMENT } from './constants';
+import { EVENT, VQRC_EXPERIMENT } from './constants';
 import { getParams } from './params';
 import { getSmartQRCodeClientScript } from './script';
 import { QRCode } from './node-qrcode';
