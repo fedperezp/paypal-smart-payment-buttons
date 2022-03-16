@@ -4,7 +4,7 @@ import { clientErrorResponse, htmlResponse, allowFrame, defaultLogger, safeJSON,
     isLocalOrTest, type ExpressMiddleware } from '../../lib';
 import type { LoggerType, CacheType, InstanceLocationInformation, ExpressRequest  } from '../../types';
 
-import { EVENT, VQRC_EXPERIMENT } from './constants';
+import { EVENT, VENMO_BLUE_HC, VQRC_EXPERIMENT } from './constants';
 import { getParams } from './params';
 import { getSmartQRCodeClientScript } from './script';
 import { QRCode } from './node-qrcode';
@@ -47,7 +47,7 @@ export function getQRCodeMiddleware({ logger = defaultLogger, cache, cdn = !isLo
                     // width:  240,
                     margin: 0,
                     color:  {
-                        dark:  '#008CFF',
+                        dark:  VENMO_BLUE_HC,
                         light: '#FFFFFF'
                     }
                 }
